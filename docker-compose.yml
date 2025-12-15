@@ -1,0 +1,19 @@
+services:
+  routeros_cm:
+    build: .
+    container_name: routeros_cm
+    ports:
+      - "6555:4000"
+    env_file:
+      - .env.docker
+    environment:
+      - PHX_SERVER=true
+      - PORT=4000
+      - PHX_HOST=localhost
+      - DATABASE_PATH=/app/data/routeros_cm.db
+    volumes:
+      - routeros_cm_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  routeros_cm_data:

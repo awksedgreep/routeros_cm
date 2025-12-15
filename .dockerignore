@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+_build/
+deps/
+.elixir_ls/
+
+# Generated files
+/priv/static/assets/
+/priv/static/cache_manifest.json
+
+# Node
+/assets/node_modules/
+
+# Test
+/cover/
+*.coverdata
+test.log
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Docker
+Dockerfile*
+docker-compose*
+
+# IDE/Editor
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+_backup/
+
+# Documentation (optional during build)
+*.md
+!README.md
