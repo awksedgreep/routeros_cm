@@ -3,26 +3,50 @@ defmodule RouterosCmWeb.API.V1.AuditController do
   API controller for querying audit logs.
   """
   use RouterosCmWeb, :controller
+  use OpenApiSpex.ControllerSpecs
 
   import RouterosCmWeb.API.V1.Base
 
   alias RouterosCm.Audit
+  alias OpenApiSpex.Schema
+  alias RouterosCmWeb.ApiSchemas
 
   plug :require_scope, "audit:read" when action in [:index, :show, :stats]
 
-  @doc """
-  List audit logs with filtering and pagination.
+  tags ["Audit"]
+  security [%{"bearer" => []}]
 
-  GET /api/v1/audit
-  Query params:
-    - page: Page number (default: 1)
-    - per_page: Items per page (default: 50, max: 100)
-    - action: Filter by action (create, update, delete)
-    - resource_type: Filter by resource type (dns_record, wireguard_interface, etc.)
-    - success: Filter by success status (true/false)
-    - from: Filter logs from this date (ISO 8601)
-    - to: Filter logs until this date (ISO 8601)
-  """
+  operation :index,
+    summary: "List audit logs",
+    description: "Returns paginated audit logs with optional filtering.",
+    parameters: [
+      page: [in: :query, type: :integer, description: "Page number (default: 1)"],
+      per_page: [in: :query, type: :integer, description: "Items per page (default: 50, max: 100)"],
+      action: [in: :query, type: :string, description: "Filter by action (create, update, delete)"],
+      resource_type: [in: :query, type: :string, description: "Filter by resource type"],
+      success: [in: :query, type: :boolean, description: "Filter by success status"],
+      from: [in: :query, type: :string, description: "Filter from date (ISO 8601)"],
+      to: [in: :query, type: :string, description: "Filter until date (ISO 8601)"]
+    ],
+    responses: [
+      ok: {"Audit log list", "application/json", %Schema{
+        type: :object,
+        properties: %{
+          data: %Schema{type: :array, items: ApiSchemas.AuditLog},
+          meta: %Schema{
+            type: :object,
+            properties: %{
+              total: %Schema{type: :integer},
+              page: %Schema{type: :integer},
+              per_page: %Schema{type: :integer},
+              total_pages: %Schema{type: :integer}
+            }
+          }
+        }
+      }},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
+
   def index(conn, params) do
     page = parse_int(params["page"], 1)
     per_page = parse_int(params["per_page"], 50) |> min(100)
@@ -52,11 +76,21 @@ defmodule RouterosCmWeb.API.V1.AuditController do
     )
   end
 
-  @doc """
-  Get a specific audit log entry.
+  operation :show,
+    summary: "Get an audit log entry",
+    description: "Returns a specific audit log entry by ID.",
+    parameters: [
+      id: [in: :path, type: :integer, description: "Audit log ID", required: true]
+    ],
+    responses: [
+      ok: {"Audit log entry", "application/json", %Schema{
+        type: :object,
+        properties: %{data: ApiSchemas.AuditLog}
+      }},
+      not_found: {"Not found", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  GET /api/v1/audit/:id
-  """
   def show(conn, %{"id" => id}) do
     try do
       log = Audit.get_log!(id)
@@ -67,11 +101,14 @@ defmodule RouterosCmWeb.API.V1.AuditController do
     end
   end
 
-  @doc """
-  Get audit log statistics.
+  operation :stats,
+    summary: "Get audit statistics",
+    description: "Returns audit log statistics.",
+    responses: [
+      ok: {"Audit statistics", "application/json", ApiSchemas.AuditStats},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  GET /api/v1/audit/stats
-  """
   def stats(conn, _params) do
     stats = Audit.get_stats()
 

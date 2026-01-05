@@ -3,19 +3,31 @@ defmodule RouterosCmWeb.API.V1.GREController do
   API controller for managing GRE tunnel interfaces across the cluster.
   """
   use RouterosCmWeb, :controller
+  use OpenApiSpex.ControllerSpecs
 
   import RouterosCmWeb.API.V1.Base
 
   alias RouterosCm.Tunnels
+  alias OpenApiSpex.Schema
+  alias RouterosCmWeb.ApiSchemas
 
   plug :require_scope, "tunnels:read" when action in [:index, :show]
   plug :require_scope, "tunnels:write" when action in [:create, :delete, :assign_ip, :remove_ip]
 
-  @doc """
-  List all GRE interfaces across the cluster (grouped by name).
+  tags ["GRE Tunnels"]
+  security [%{"bearer" => []}]
 
-  GET /api/v1/gre
-  """
+  operation :index,
+    summary: "List GRE interfaces",
+    description: "Returns all GRE tunnel interfaces across the cluster, grouped by name.",
+    responses: [
+      ok: {"GRE interface list", "application/json", %Schema{
+        type: :object,
+        properties: %{data: %Schema{type: :array, items: ApiSchemas.GREInterface}}
+      }},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
+
   def index(conn, _params) do
     results = Tunnels.list_gre_interfaces(current_scope(conn))
     interfaces = group_interfaces_by_name(results)
@@ -23,11 +35,21 @@ defmodule RouterosCmWeb.API.V1.GREController do
     json_response(conn, Enum.map(interfaces, &interface_to_json/1))
   end
 
-  @doc """
-  Get a specific GRE interface by name.
+  operation :show,
+    summary: "Get a GRE interface",
+    description: "Returns a specific GRE interface by name.",
+    parameters: [
+      name: [in: :path, type: :string, description: "Interface name", required: true]
+    ],
+    responses: [
+      ok: {"GRE interface", "application/json", %Schema{
+        type: :object,
+        properties: %{data: ApiSchemas.GREInterface}
+      }},
+      not_found: {"Not found", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  GET /api/v1/gre/:name
-  """
   def show(conn, %{"name" => name}) do
     results = Tunnels.list_gre_interfaces(current_scope(conn))
     interfaces = group_interfaces_by_name(results)
@@ -41,17 +63,25 @@ defmodule RouterosCmWeb.API.V1.GREController do
     end
   end
 
-  @doc """
-  Create a new GRE interface across the cluster.
+  operation :create,
+    summary: "Create a GRE interface",
+    description: "Creates a new GRE tunnel interface across all nodes.",
+    request_body: {"GRE interface parameters", "application/json", %Schema{
+      type: :object,
+      required: [:name, "local-address", "remote-address"],
+      properties: %{
+        name: %Schema{type: :string, description: "Interface name"},
+        "local-address": %Schema{type: :string, description: "Local endpoint IP"},
+        "remote-address": %Schema{type: :string, description: "Remote endpoint IP"},
+        mtu: %Schema{type: :string, description: "MTU value"},
+        "ipsec-secret": %Schema{type: :string, description: "IPSec shared secret"}
+      }
+    }},
+    responses: [
+      ok: {"Creation result", "application/json", ApiSchemas.ClusterResult},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  POST /api/v1/gre
-  Body:
-    - name: Interface name (required)
-    - local-address: Local endpoint IP (required)
-    - remote-address: Remote endpoint IP (required)
-    - mtu: MTU value (optional)
-    - ipsec-secret: IPSec shared secret (optional)
-  """
   def create(conn, params) do
     attrs = normalize_gre_params(params)
 
@@ -64,11 +94,17 @@ defmodule RouterosCmWeb.API.V1.GREController do
     end
   end
 
-  @doc """
-  Delete a GRE interface by name from all nodes.
+  operation :delete,
+    summary: "Delete a GRE interface",
+    description: "Deletes a GRE interface by name from all nodes.",
+    parameters: [
+      name: [in: :path, type: :string, description: "Interface name", required: true]
+    ],
+    responses: [
+      ok: {"Delete result", "application/json", ApiSchemas.ClusterResult},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  DELETE /api/v1/gre/:name
-  """
   def delete(conn, %{"name" => name}) do
     case Tunnels.delete_gre_interface_by_name(current_scope(conn), name) do
       {:ok, successes, []} ->
@@ -79,13 +115,25 @@ defmodule RouterosCmWeb.API.V1.GREController do
     end
   end
 
-  @doc """
-  Assign an IP address to a GRE interface.
+  operation :assign_ip,
+    summary: "Assign IP to GRE interface",
+    description: "Assigns an IP address to a GRE interface across all nodes.",
+    parameters: [
+      name: [in: :path, type: :string, description: "Interface name", required: true]
+    ],
+    request_body: {"IP address", "application/json", %Schema{
+      type: :object,
+      required: [:address],
+      properties: %{
+        address: %Schema{type: :string, description: "IP address with prefix (e.g., 172.16.0.1/30)"}
+      }
+    }},
+    responses: [
+      ok: {"Assignment result", "application/json", ApiSchemas.ClusterResult},
+      bad_request: {"Bad request", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  POST /api/v1/gre/:name/ip
-  Body:
-    - address: IP address with prefix (e.g., "172.16.0.1/30")
-  """
   def assign_ip(conn, %{"name" => name} = params) do
     address = params["address"]
 
@@ -102,11 +150,18 @@ defmodule RouterosCmWeb.API.V1.GREController do
     end
   end
 
-  @doc """
-  Remove an IP address from a GRE interface.
+  operation :remove_ip,
+    summary: "Remove IP from GRE interface",
+    description: "Removes an IP address from a GRE interface across all nodes.",
+    parameters: [
+      name: [in: :path, type: :string, description: "Interface name", required: true],
+      address: [in: :path, type: :string, description: "IP address to remove (URL-encoded)", required: true]
+    ],
+    responses: [
+      ok: {"Removal result", "application/json", ApiSchemas.ClusterResult},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  DELETE /api/v1/gre/:name/ip/:address
-  """
   def remove_ip(conn, %{"name" => name, "address" => address}) do
     # URL-decode the address since it may contain / character
     decoded_address = URI.decode(address)

@@ -3,20 +3,32 @@ defmodule RouterosCmWeb.API.V1.WireGuardController do
   API controller for managing WireGuard interfaces and peers across the cluster.
   """
   use RouterosCmWeb, :controller
+  use OpenApiSpex.ControllerSpecs
 
   import RouterosCmWeb.API.V1.Base
 
   alias RouterosCm.Tunnels
   alias RouterosCm.WireGuard.Keys
+  alias OpenApiSpex.Schema
+  alias RouterosCmWeb.ApiSchemas
 
   plug :require_scope, "wireguard:read" when action in [:index, :show, :list_peers]
   plug :require_scope, "wireguard:write" when action in [:create, :delete, :assign_ip, :remove_ip, :create_peer, :delete_peer, :generate_keypair]
 
-  @doc """
-  List all WireGuard interfaces across the cluster (grouped by name).
+  tags ["WireGuard"]
+  security [%{"bearer" => []}]
 
-  GET /api/v1/wireguard
-  """
+  operation :index,
+    summary: "List WireGuard interfaces",
+    description: "Returns all WireGuard interfaces across the cluster, grouped by name.",
+    responses: [
+      ok: {"WireGuard interface list", "application/json", %Schema{
+        type: :object,
+        properties: %{data: %Schema{type: :array, items: ApiSchemas.WireGuardInterface}}
+      }},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
+
   def index(conn, _params) do
     results = Tunnels.list_wireguard_interfaces(current_scope(conn))
     interfaces = group_interfaces_by_name(results)
@@ -24,11 +36,21 @@ defmodule RouterosCmWeb.API.V1.WireGuardController do
     json_response(conn, Enum.map(interfaces, &interface_to_json/1))
   end
 
-  @doc """
-  Get a specific WireGuard interface by name.
+  operation :show,
+    summary: "Get a WireGuard interface",
+    description: "Returns a specific WireGuard interface by name.",
+    parameters: [
+      name: [in: :path, type: :string, description: "Interface name", required: true]
+    ],
+    responses: [
+      ok: {"WireGuard interface", "application/json", %Schema{
+        type: :object,
+        properties: %{data: ApiSchemas.WireGuardInterface}
+      }},
+      not_found: {"Not found", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  GET /api/v1/wireguard/:name
-  """
   def show(conn, %{"name" => name}) do
     results = Tunnels.list_wireguard_interfaces(current_scope(conn))
     interfaces = group_interfaces_by_name(results)
@@ -42,16 +64,25 @@ defmodule RouterosCmWeb.API.V1.WireGuardController do
     end
   end
 
-  @doc """
-  Create a new WireGuard interface across the cluster.
+  operation :create,
+    summary: "Create a WireGuard interface",
+    description: "Creates a new WireGuard interface across all nodes.",
+    request_body: {"WireGuard interface parameters", "application/json", %Schema{
+      type: :object,
+      required: [:name],
+      properties: %{
+        name: %Schema{type: :string, description: "Interface name"},
+        "listen-port": %Schema{type: :string, description: "UDP listen port"},
+        mtu: %Schema{type: :string, description: "MTU value"},
+        "private-key": %Schema{type: :string, description: "Private key (auto-generated if not provided)"}
+      }
+    }},
+    responses: [
+      ok: {"Creation result", "application/json", ApiSchemas.ClusterResult},
+      bad_request: {"Error", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  POST /api/v1/wireguard
-  Body:
-    - name: Interface name (required)
-    - listen-port: UDP listen port (optional)
-    - mtu: MTU value (optional)
-    - private-key: Private key (optional, auto-generated if not provided)
-  """
   def create(conn, params) do
     attrs = normalize_wireguard_params(params)
 
@@ -67,11 +98,17 @@ defmodule RouterosCmWeb.API.V1.WireGuardController do
     end
   end
 
-  @doc """
-  Delete a WireGuard interface by name from all nodes.
+  operation :delete,
+    summary: "Delete a WireGuard interface",
+    description: "Deletes a WireGuard interface by name from all nodes.",
+    parameters: [
+      name: [in: :path, type: :string, description: "Interface name", required: true]
+    ],
+    responses: [
+      ok: {"Delete result", "application/json", ApiSchemas.ClusterResult},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  DELETE /api/v1/wireguard/:name
-  """
   def delete(conn, %{"name" => name}) do
     case Tunnels.delete_wireguard_interface_cluster(current_scope(conn), name) do
       {:ok, successes} ->
@@ -82,13 +119,25 @@ defmodule RouterosCmWeb.API.V1.WireGuardController do
     end
   end
 
-  @doc """
-  Assign an IP address to a WireGuard interface.
+  operation :assign_ip,
+    summary: "Assign IP to WireGuard interface",
+    description: "Assigns an IP address to a WireGuard interface across all nodes.",
+    parameters: [
+      name: [in: :path, type: :string, description: "Interface name", required: true]
+    ],
+    request_body: {"IP address", "application/json", %Schema{
+      type: :object,
+      required: [:address],
+      properties: %{
+        address: %Schema{type: :string, description: "IP address with prefix (e.g., 10.0.0.1/24)"}
+      }
+    }},
+    responses: [
+      ok: {"Assignment result", "application/json", ApiSchemas.ClusterResult},
+      bad_request: {"Bad request", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  POST /api/v1/wireguard/:name/ip
-  Body:
-    - address: IP address with prefix (e.g., "10.0.0.1/24")
-  """
   def assign_ip(conn, %{"name" => name} = params) do
     address = params["address"]
 
@@ -105,11 +154,18 @@ defmodule RouterosCmWeb.API.V1.WireGuardController do
     end
   end
 
-  @doc """
-  Remove an IP address from a WireGuard interface.
+  operation :remove_ip,
+    summary: "Remove IP from WireGuard interface",
+    description: "Removes an IP address from a WireGuard interface across all nodes.",
+    parameters: [
+      name: [in: :path, type: :string, description: "Interface name", required: true],
+      address: [in: :path, type: :string, description: "IP address to remove (URL-encoded)", required: true]
+    ],
+    responses: [
+      ok: {"Removal result", "application/json", ApiSchemas.ClusterResult},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  DELETE /api/v1/wireguard/:name/ip/:address
-  """
   def remove_ip(conn, %{"name" => name, "address" => address}) do
     # URL-decode the address since it may contain / character
     decoded_address = URI.decode(address)
@@ -123,11 +179,20 @@ defmodule RouterosCmWeb.API.V1.WireGuardController do
     end
   end
 
-  @doc """
-  List peers for a WireGuard interface.
+  operation :list_peers,
+    summary: "List WireGuard peers",
+    description: "Returns all peers for a WireGuard interface.",
+    parameters: [
+      name: [in: :path, type: :string, description: "Interface name", required: true]
+    ],
+    responses: [
+      ok: {"Peer list", "application/json", %Schema{
+        type: :object,
+        properties: %{data: %Schema{type: :array, items: ApiSchemas.WireGuardPeer}}
+      }},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  GET /api/v1/wireguard/:name/peers
-  """
   def list_peers(conn, %{"name" => name}) do
     case Tunnels.list_wireguard_peers(current_scope(conn), name) do
       {:ok, results} ->
@@ -139,17 +204,29 @@ defmodule RouterosCmWeb.API.V1.WireGuardController do
     end
   end
 
-  @doc """
-  Create a WireGuard peer on an interface.
+  operation :create_peer,
+    summary: "Create a WireGuard peer",
+    description: "Creates a new peer on a WireGuard interface across all nodes.",
+    parameters: [
+      name: [in: :path, type: :string, description: "Interface name", required: true]
+    ],
+    request_body: {"Peer parameters", "application/json", %Schema{
+      type: :object,
+      required: ["public-key", "allowed-address"],
+      properties: %{
+        "public-key": %Schema{type: :string, description: "Peer's public key"},
+        "allowed-address": %Schema{type: :string, description: "Allowed IP address/subnet"},
+        "endpoint-address": %Schema{type: :string, description: "Peer's endpoint address"},
+        "endpoint-port": %Schema{type: :string, description: "Peer's endpoint port"},
+        "persistent-keepalive": %Schema{type: :string, description: "Keepalive interval in seconds"}
+      }
+    }},
+    responses: [
+      ok: {"Creation result", "application/json", ApiSchemas.ClusterResult},
+      bad_request: {"Bad request", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  POST /api/v1/wireguard/:name/peers
-  Body:
-    - public-key: Peer's public key (required)
-    - allowed-address: Allowed IP address/subnet (required)
-    - endpoint-address: Peer's endpoint address (optional)
-    - endpoint-port: Peer's endpoint port (optional)
-    - persistent-keepalive: Keepalive interval (optional)
-  """
   def create_peer(conn, %{"name" => name} = params) do
     attrs = normalize_peer_params(params)
 
@@ -166,11 +243,18 @@ defmodule RouterosCmWeb.API.V1.WireGuardController do
     end
   end
 
-  @doc """
-  Delete a WireGuard peer from an interface.
+  operation :delete_peer,
+    summary: "Delete a WireGuard peer",
+    description: "Deletes a peer from a WireGuard interface across all nodes.",
+    parameters: [
+      name: [in: :path, type: :string, description: "Interface name", required: true],
+      public_key: [in: :path, type: :string, description: "Peer's public key (URL-encoded)", required: true]
+    ],
+    responses: [
+      ok: {"Delete result", "application/json", ApiSchemas.ClusterResult},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  DELETE /api/v1/wireguard/:name/peers/:public_key
-  """
   def delete_peer(conn, %{"name" => name, "public_key" => public_key}) do
     # URL-decode the public key since it may contain special characters
     decoded_key = URI.decode(public_key)
@@ -184,15 +268,14 @@ defmodule RouterosCmWeb.API.V1.WireGuardController do
     end
   end
 
-  @doc """
-  Generate a new WireGuard keypair.
+  operation :generate_keypair,
+    summary: "Generate WireGuard keypair",
+    description: "Generates a new WireGuard private/public key pair.",
+    responses: [
+      ok: {"Keypair", "application/json", ApiSchemas.WireGuardKeypair},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  POST /api/v1/wireguard/generate-keypair
-
-  Returns a new private and public key pair. The private key can be used
-  when creating a WireGuard interface, and the public key can be shared
-  with peers.
-  """
   def generate_keypair(conn, _params) do
     {private_key, public_key} = Keys.generate_key_pair()
 

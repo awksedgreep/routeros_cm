@@ -3,29 +3,51 @@ defmodule RouterosCmWeb.API.V1.NodeController do
   API controller for managing cluster nodes.
   """
   use RouterosCmWeb, :controller
+  use OpenApiSpex.ControllerSpecs
 
   import RouterosCmWeb.API.V1.Base
 
   alias RouterosCm.Cluster
+  alias OpenApiSpex.Schema
+  alias RouterosCmWeb.ApiSchemas
 
   plug :require_scope, "nodes:read" when action in [:index, :show]
   plug :require_scope, "nodes:write" when action in [:create, :update, :delete, :test]
 
-  @doc """
-  List all nodes in the cluster.
+  tags ["Nodes"]
+  security [%{"bearer" => []}]
 
-  GET /api/v1/nodes
-  """
+  operation :index,
+    summary: "List all nodes",
+    description: "Returns a list of all nodes in the cluster.",
+    responses: [
+      ok: {"Node list", "application/json", %Schema{
+        type: :object,
+        properties: %{data: %Schema{type: :array, items: ApiSchemas.Node}}
+      }},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
+
   def index(conn, _params) do
     nodes = Cluster.list_nodes()
     json_response(conn, Enum.map(nodes, &node_to_json/1))
   end
 
-  @doc """
-  Get a specific node by ID.
+  operation :show,
+    summary: "Get a node",
+    description: "Returns a specific node by ID.",
+    parameters: [
+      id: [in: :path, type: :integer, description: "Node ID", required: true]
+    ],
+    responses: [
+      ok: {"Node details", "application/json", %Schema{
+        type: :object,
+        properties: %{data: ApiSchemas.Node}
+      }},
+      not_found: {"Not found", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  GET /api/v1/nodes/:id
-  """
   def show(conn, %{"id" => id}) do
     case Cluster.get_node(id) do
       nil ->
@@ -36,11 +58,19 @@ defmodule RouterosCmWeb.API.V1.NodeController do
     end
   end
 
-  @doc """
-  Create a new node.
+  operation :create,
+    summary: "Create a node",
+    description: "Creates a new node in the cluster.",
+    request_body: {"Node parameters", "application/json", ApiSchemas.NodeCreateRequest},
+    responses: [
+      created: {"Node created", "application/json", %Schema{
+        type: :object,
+        properties: %{data: ApiSchemas.Node}
+      }},
+      unprocessable_entity: {"Validation error", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  POST /api/v1/nodes
-  """
   def create(conn, %{"node" => node_params}) do
     case Cluster.create_node(node_params) do
       {:ok, node} ->
@@ -56,11 +86,23 @@ defmodule RouterosCmWeb.API.V1.NodeController do
     create(conn, %{"node" => params})
   end
 
-  @doc """
-  Update an existing node.
+  operation :update,
+    summary: "Update a node",
+    description: "Updates an existing node.",
+    parameters: [
+      id: [in: :path, type: :integer, description: "Node ID", required: true]
+    ],
+    request_body: {"Node parameters", "application/json", ApiSchemas.NodeCreateRequest},
+    responses: [
+      ok: {"Node updated", "application/json", %Schema{
+        type: :object,
+        properties: %{data: ApiSchemas.Node}
+      }},
+      not_found: {"Not found", "application/json", ApiSchemas.Error},
+      unprocessable_entity: {"Validation error", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  PATCH/PUT /api/v1/nodes/:id
-  """
   def update(conn, %{"id" => id, "node" => node_params}) do
     case Cluster.get_node(id) do
       nil ->
@@ -83,11 +125,18 @@ defmodule RouterosCmWeb.API.V1.NodeController do
     update(conn, %{"id" => id, "node" => node_params})
   end
 
-  @doc """
-  Delete a node.
+  operation :delete,
+    summary: "Delete a node",
+    description: "Removes a node from the cluster.",
+    parameters: [
+      id: [in: :path, type: :integer, description: "Node ID", required: true]
+    ],
+    responses: [
+      no_content: "Node deleted",
+      not_found: {"Not found", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  DELETE /api/v1/nodes/:id
-  """
   def delete(conn, %{"id" => id}) do
     case Cluster.get_node(id) do
       nil ->
@@ -104,11 +153,45 @@ defmodule RouterosCmWeb.API.V1.NodeController do
     end
   end
 
-  @doc """
-  Test connection to a node.
+  operation :test,
+    summary: "Test node connection",
+    description: "Tests the connection to a specific node.",
+    parameters: [
+      id: [in: :path, type: :integer, description: "Node ID", required: true]
+    ],
+    responses: [
+      ok: {"Connection successful", "application/json", %Schema{
+        type: :object,
+        properties: %{
+          data: %Schema{
+            type: :object,
+            properties: %{
+              node_id: %Schema{type: :integer},
+              name: %Schema{type: :string},
+              status: %Schema{type: :string},
+              message: %Schema{type: :string}
+            }
+          }
+        }
+      }},
+      service_unavailable: {"Connection failed", "application/json", %Schema{
+        type: :object,
+        properties: %{
+          data: %Schema{
+            type: :object,
+            properties: %{
+              node_id: %Schema{type: :integer},
+              name: %Schema{type: :string},
+              status: %Schema{type: :string},
+              message: %Schema{type: :string}
+            }
+          }
+        }
+      }},
+      not_found: {"Not found", "application/json", ApiSchemas.Error},
+      unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
+    ]
 
-  POST /api/v1/nodes/:id/test
-  """
   def test(conn, %{"id" => id}) do
     case Cluster.get_node(id) do
       nil ->
