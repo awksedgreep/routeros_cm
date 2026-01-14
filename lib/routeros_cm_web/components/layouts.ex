@@ -90,10 +90,25 @@ defmodule RouterosCmWeb.Layouts do
                 <.icon name="hero-clipboard-document-list" class="w-4 h-4" /> Audit
               </.link>
             </li>
-            <li>
-              <.link navigate={~p"/users/settings"} class="btn btn-ghost btn-sm">
+            <li class="dropdown dropdown-hover dropdown-end">
+              <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
                 <.icon name="hero-cog-6-tooth" class="w-4 h-4" /> Settings
-              </.link>
+              </div>
+              <ul
+                tabindex="0"
+                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+              >
+                <li>
+                  <.link navigate={~p"/users/settings"}>
+                    <.icon name="hero-user-circle" class="w-4 h-4" /> Account
+                  </.link>
+                </li>
+                <li>
+                  <.link navigate={~p"/users/settings/tokens"}>
+                    <.icon name="hero-key" class="w-4 h-4" /> API Tokens
+                  </.link>
+                </li>
+              </ul>
             </li>
             <li>
               <.link href={~p"/users/log-out"} method="delete" class="btn btn-ghost btn-sm">

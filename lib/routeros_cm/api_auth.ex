@@ -56,8 +56,16 @@ defmodule RouterosCm.ApiAuth do
   """
   def create_token_for_user(user, attrs) do
     attrs
-    |> Map.put(:user_id, user.id)
+    |> stringify_keys()
+    |> Map.put("user_id", user.id)
     |> create_token()
+  end
+
+  defp stringify_keys(map) when is_map(map) do
+    Map.new(map, fn
+      {k, v} when is_atom(k) -> {Atom.to_string(k), v}
+      {k, v} -> {k, v}
+    end)
   end
 
   @doc """
