@@ -14,7 +14,13 @@ config :routeros_cm, :credential_encryption_key, "QCG0nLvTaKMtB2yVzpzC4X/yvR+RHt
 config :routeros_cm, RouterosCm.Repo,
   database: Path.expand("../routeros_cm_test.db", __DIR__),
   pool_size: 5,
-  pool: Ecto.Adapters.SQL.Sandbox
+  pool: Ecto.Adapters.SQL.Sandbox,
+  # SQLite PRAGMA options
+  journal_mode: :wal,
+  busy_timeout: 5000,
+  cache_size: -64000,
+  foreign_keys: :on,
+  synchronous: :normal
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.

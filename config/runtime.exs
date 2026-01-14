@@ -71,7 +71,13 @@ if config_env() == :prod do
 
   config :routeros_cm, RouterosCm.Repo,
     database: database_path,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "5")
+    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "5"),
+    # SQLite PRAGMA options for concurrency and performance
+    journal_mode: :wal,
+    busy_timeout: 5000,
+    cache_size: -64000,
+    foreign_keys: :on,
+    synchronous: :normal
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you

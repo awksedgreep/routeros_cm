@@ -5,7 +5,13 @@ config :routeros_cm, RouterosCm.Repo,
   database: Path.expand("../routeros_cm_dev.db", __DIR__),
   pool_size: 5,
   stacktrace: true,
-  show_sensitive_data_on_connection_error: true
+  show_sensitive_data_on_connection_error: true,
+  # SQLite PRAGMA options for concurrency and performance
+  journal_mode: :wal,
+  busy_timeout: 5000,
+  cache_size: -64000,
+  foreign_keys: :on,
+  synchronous: :normal
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
