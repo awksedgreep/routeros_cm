@@ -14,19 +14,22 @@ defmodule RouterosCmWeb.API.V1.RouterOSUserController do
   plug :require_scope, "users:read" when action in [:index, :show, :groups, :active_sessions]
   plug :require_scope, "users:write" when action in [:create, :update, :delete]
 
-  tags ["RouterOS Users"]
-  security [%{"bearer" => []}]
+  tags(["RouterOS Users"])
+  security([%{"bearer" => []}])
 
-  operation :index,
+  operation(:index,
     summary: "List RouterOS users",
     description: "Returns all RouterOS users across the cluster, grouped by name.",
     responses: [
-      ok: {"User list", "application/json", %Schema{
-        type: :object,
-        properties: %{data: %Schema{type: :array, items: ApiSchemas.RouterOSUser}}
-      }},
+      ok:
+        {"User list", "application/json",
+         %Schema{
+           type: :object,
+           properties: %{data: %Schema{type: :array, items: ApiSchemas.RouterOSUser}}
+         }},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def index(conn, _params) do
     {:ok, results} = RouterOSUsers.list_routeros_users(current_scope: current_scope(conn))
@@ -35,20 +38,23 @@ defmodule RouterosCmWeb.API.V1.RouterOSUserController do
     json_response(conn, Enum.map(users, &user_to_json/1))
   end
 
-  operation :show,
+  operation(:show,
     summary: "Get a RouterOS user",
     description: "Returns a specific RouterOS user by name.",
     parameters: [
       name: [in: :path, type: :string, description: "Username", required: true]
     ],
     responses: [
-      ok: {"User details", "application/json", %Schema{
-        type: :object,
-        properties: %{data: ApiSchemas.RouterOSUser}
-      }},
+      ok:
+        {"User details", "application/json",
+         %Schema{
+           type: :object,
+           properties: %{data: ApiSchemas.RouterOSUser}
+         }},
       not_found: {"Not found", "application/json", ApiSchemas.Error},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def show(conn, %{"name" => name}) do
     {:ok, results} = RouterOSUsers.list_routeros_users(current_scope: current_scope(conn))
@@ -63,7 +69,7 @@ defmodule RouterosCmWeb.API.V1.RouterOSUserController do
     end
   end
 
-  operation :create,
+  operation(:create,
     summary: "Create a RouterOS user",
     description: "Creates a new RouterOS user across all nodes.",
     request_body: {"User parameters", "application/json", ApiSchemas.RouterOSUserCreateRequest},
@@ -72,6 +78,7 @@ defmodule RouterosCmWeb.API.V1.RouterOSUserController do
       bad_request: {"Bad request", "application/json", ApiSchemas.Error},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def create(conn, params) do
     attrs = normalize_user_params(params)
@@ -85,29 +92,38 @@ defmodule RouterosCmWeb.API.V1.RouterOSUserController do
         {:ok, successes, failures} =
           RouterOSUsers.create_routeros_user(attrs, "all", current_scope(conn))
 
-        json_cluster_result(conn, "create", "routeros_user", format_successes(successes), failures)
+        json_cluster_result(
+          conn,
+          "create",
+          "routeros_user",
+          format_successes(successes),
+          failures
+        )
       end
     end
   end
 
-  operation :update,
+  operation(:update,
     summary: "Update a RouterOS user",
     description: "Updates a RouterOS user by name across all nodes.",
     parameters: [
       name: [in: :path, type: :string, description: "Username", required: true]
     ],
-    request_body: {"User parameters", "application/json", %Schema{
-      type: :object,
-      properties: %{
-        group: %Schema{type: :string, description: "User group"},
-        password: %Schema{type: :string, description: "New password"},
-        comment: %Schema{type: :string, description: "Comment"}
-      }
-    }},
+    request_body:
+      {"User parameters", "application/json",
+       %Schema{
+         type: :object,
+         properties: %{
+           group: %Schema{type: :string, description: "User group"},
+           password: %Schema{type: :string, description: "New password"},
+           comment: %Schema{type: :string, description: "Comment"}
+         }
+       }},
     responses: [
       ok: {"Update result", "application/json", ApiSchemas.ClusterResult},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def update(conn, %{"name" => name} = params) do
     attrs =
@@ -121,7 +137,7 @@ defmodule RouterosCmWeb.API.V1.RouterOSUserController do
     json_cluster_result(conn, "update", "routeros_user", successes, failures)
   end
 
-  operation :delete,
+  operation(:delete,
     summary: "Delete a RouterOS user",
     description: "Deletes a RouterOS user by name from all nodes.",
     parameters: [
@@ -131,6 +147,7 @@ defmodule RouterosCmWeb.API.V1.RouterOSUserController do
       ok: {"Delete result", "application/json", ApiSchemas.ClusterResult},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def delete(conn, %{"name" => name}) do
     {:ok, successes, failures} =
@@ -139,28 +156,31 @@ defmodule RouterosCmWeb.API.V1.RouterOSUserController do
     json_cluster_result(conn, "delete", "routeros_user", successes, failures)
   end
 
-  operation :groups,
+  operation(:groups,
     summary: "List user groups",
     description: "Returns all unique user groups across the cluster.",
     responses: [
-      ok: {"Group list", "application/json", %Schema{
-        type: :object,
-        properties: %{
-          data: %Schema{
-            type: :array,
-            items: %Schema{
-              type: :object,
-              properties: %{
-                name: %Schema{type: :string},
-                policy: %Schema{type: :string},
-                skin: %Schema{type: :string}
-              }
-            }
-          }
-        }
-      }},
+      ok:
+        {"Group list", "application/json",
+         %Schema{
+           type: :object,
+           properties: %{
+             data: %Schema{
+               type: :array,
+               items: %Schema{
+                 type: :object,
+                 properties: %{
+                   name: %Schema{type: :string},
+                   policy: %Schema{type: :string},
+                   skin: %Schema{type: :string}
+                 }
+               }
+             }
+           }
+         }},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def groups(conn, _params) do
     {:ok, results} = RouterOSUsers.list_user_groups()
@@ -169,32 +189,35 @@ defmodule RouterosCmWeb.API.V1.RouterOSUserController do
     json_response(conn, groups)
   end
 
-  operation :active_sessions,
+  operation(:active_sessions,
     summary: "List active sessions",
     description: "Returns all active user sessions across the cluster.",
     responses: [
-      ok: {"Session list", "application/json", %Schema{
-        type: :object,
-        properties: %{
-          data: %Schema{
-            type: :array,
-            items: %Schema{
-              type: :object,
-              properties: %{
-                node_name: %Schema{type: :string},
-                node_id: %Schema{type: :integer},
-                name: %Schema{type: :string},
-                address: %Schema{type: :string},
-                via: %Schema{type: :string},
-                when: %Schema{type: :string},
-                group: %Schema{type: :string}
-              }
-            }
-          }
-        }
-      }},
+      ok:
+        {"Session list", "application/json",
+         %Schema{
+           type: :object,
+           properties: %{
+             data: %Schema{
+               type: :array,
+               items: %Schema{
+                 type: :object,
+                 properties: %{
+                   node_name: %Schema{type: :string},
+                   node_id: %Schema{type: :integer},
+                   name: %Schema{type: :string},
+                   address: %Schema{type: :string},
+                   via: %Schema{type: :string},
+                   when: %Schema{type: :string},
+                   group: %Schema{type: :string}
+                 }
+               }
+             }
+           }
+         }},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def active_sessions(conn, _params) do
     {:ok, results} = RouterOSUsers.list_active_users()

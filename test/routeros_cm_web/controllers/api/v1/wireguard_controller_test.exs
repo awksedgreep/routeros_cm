@@ -127,7 +127,8 @@ defmodule RouterosCmWeb.API.V1.WireGuardControllerTest do
   describe "remove_ip" do
     test "returns cluster operation result", %{conn: conn} do
       # URL-encode the address since it contains /
-      conn = delete(conn, ~p"/api/v1/wireguard/test-wg/ip/#{URI.encode("10.0.0.1/24", &(&1 != ?/))}")
+      conn =
+        delete(conn, ~p"/api/v1/wireguard/test-wg/ip/#{URI.encode("10.0.0.1/24", &(&1 != ?/))}")
 
       response = json_response(conn, 200)
       assert is_map(response["data"])
@@ -146,7 +147,8 @@ defmodule RouterosCmWeb.API.V1.WireGuardControllerTest do
 
   describe "create_peer" do
     test "returns 400 when public-key is missing", %{conn: conn} do
-      conn = post(conn, ~p"/api/v1/wireguard/test-wg/peers", %{"allowed-address" => "10.0.0.2/32"})
+      conn =
+        post(conn, ~p"/api/v1/wireguard/test-wg/peers", %{"allowed-address" => "10.0.0.2/32"})
 
       assert %{"error" => _} = json_response(conn, 400)
     end

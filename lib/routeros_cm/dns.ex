@@ -159,7 +159,10 @@ defmodule RouterosCm.DNS do
         "update",
         "dns_record",
         "partial_failure",
-        %{user_id: current_scope.user.id, details: %{record_id: record_id, failures: length(failures)}}
+        %{
+          user_id: current_scope.user.id,
+          details: %{record_id: record_id, failures: length(failures)}
+        }
       )
     end
 
@@ -205,7 +208,10 @@ defmodule RouterosCm.DNS do
         "delete",
         "dns_record",
         "partial_failure",
-        %{user_id: current_scope.user.id, details: %{record_id: record_id, failures: length(failures)}}
+        %{
+          user_id: current_scope.user.id,
+          details: %{record_id: record_id, failures: length(failures)}
+        }
       )
     end
 
@@ -270,7 +276,10 @@ defmodule RouterosCm.DNS do
         "delete",
         "dns_record",
         "partial_failure",
-        %{user_id: current_scope.user.id, details: %{name: record_name, failures: length(failures)}}
+        %{
+          user_id: current_scope.user.id,
+          details: %{name: record_name, failures: length(failures)}
+        }
       )
     end
 
@@ -343,7 +352,10 @@ defmodule RouterosCm.DNS do
         "update",
         "dns_record",
         "partial_failure",
-        %{user_id: current_scope.user.id, details: %{name: record_name, failures: length(failures)}}
+        %{
+          user_id: current_scope.user.id,
+          details: %{name: record_name, failures: length(failures)}
+        }
       )
     end
 

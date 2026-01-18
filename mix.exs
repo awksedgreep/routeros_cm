@@ -4,7 +4,7 @@ defmodule RouterosCm.MixProject do
   def project do
     [
       app: :routeros_cm,
-      version: "0.7.0",
+      version: "0.8.0",
       elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -16,7 +16,10 @@ defmodule RouterosCm.MixProject do
         routeros_cm: [
           include_executables_for: [:unix],
           applications: [runtime_tools: :permanent],
-          validate_compile_env: false
+          validate_compile_env: false,
+          config_providers: [
+            {RouterosCm.DopplerConfigProvider, []}
+          ]
         ]
       ]
     ]
@@ -52,7 +55,7 @@ defmodule RouterosCm.MixProject do
       {:phoenix, "~> 1.8.2"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
-      {:ecto_sqlite3, ">= 0.0.0"},
+      {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.1.0"},

@@ -449,9 +449,15 @@ defmodule RouterosCmWeb.RouterOSUsersLive.Index do
           <.input
             field={@form[:password]}
             type="text"
-            label={if @live_action == :edit, do: "New Password (leave empty to keep current)", else: "Password"}
+            label={
+              if @live_action == :edit,
+                do: "New Password (leave empty to keep current)",
+                else: "Password"
+            }
             required={@live_action == :new}
-            placeholder={if @live_action == :edit, do: "Leave empty to keep current password", else: ""}
+            placeholder={
+              if @live_action == :edit, do: "Leave empty to keep current password", else: ""
+            }
           />
 
           <.input

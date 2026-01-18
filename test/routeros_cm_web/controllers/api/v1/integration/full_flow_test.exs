@@ -189,7 +189,10 @@ defmodule RouterosCmWeb.API.V1.Integration.FullFlowTest do
 
       # Paginated query
       conn_paginated = get(conn, ~p"/api/v1/audit?page=1&per_page=5")
-      assert %{"data" => paginated_logs, "meta" => paginated_meta} = json_response(conn_paginated, 200)
+
+      assert %{"data" => paginated_logs, "meta" => paginated_meta} =
+               json_response(conn_paginated, 200)
+
       assert length(paginated_logs) <= 5
       assert paginated_meta["per_page"] == 5
 
@@ -226,7 +229,14 @@ defmodule RouterosCmWeb.API.V1.Integration.FullFlowTest do
       assert conn_read.status == 200
 
       # Cannot create nodes
-      conn_create = post(conn, ~p"/api/v1/nodes", %{name: "test", host: "1.2.3.4", username: "a", password: "b"})
+      conn_create =
+        post(conn, ~p"/api/v1/nodes", %{
+          name: "test",
+          host: "1.2.3.4",
+          username: "a",
+          password: "b"
+        })
+
       assert conn_create.status == 403
 
       # Can read DNS
@@ -234,7 +244,9 @@ defmodule RouterosCmWeb.API.V1.Integration.FullFlowTest do
       assert conn_dns.status == 200
 
       # Cannot create DNS records
-      conn_dns_create = post(conn, ~p"/api/v1/dns/records", %{name: "test.local", address: "1.2.3.4"})
+      conn_dns_create =
+        post(conn, ~p"/api/v1/dns/records", %{name: "test.local", address: "1.2.3.4"})
+
       assert conn_dns_create.status == 403
     end
 

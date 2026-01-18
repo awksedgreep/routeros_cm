@@ -12,16 +12,17 @@ defmodule RouterosCmWeb.API.V1.ClusterController do
 
   plug :require_scope, "nodes:read" when action in [:health, :stats]
 
-  tags ["Cluster"]
-  security [%{"bearer" => []}]
+  tags(["Cluster"])
+  security([%{"bearer" => []}])
 
-  operation :health,
+  operation(:health,
     summary: "Get cluster health",
     description: "Returns health information for all active nodes in the cluster.",
     responses: [
       ok: {"Cluster health", "application/json", ApiSchemas.ClusterHealth},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def health(conn, _params) do
     health_data = Cluster.fetch_cluster_health()
@@ -41,13 +42,14 @@ defmodule RouterosCmWeb.API.V1.ClusterController do
     })
   end
 
-  operation :stats,
+  operation(:stats,
     summary: "Get cluster statistics",
     description: "Returns statistics about the cluster nodes.",
     responses: [
       ok: {"Cluster stats", "application/json", ApiSchemas.ClusterStats},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def stats(conn, _params) do
     stats = Cluster.get_cluster_stats()

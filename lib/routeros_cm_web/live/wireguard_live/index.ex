@@ -67,7 +67,10 @@ defmodule RouterosCmWeb.WireGuardLive.Index do
   @impl true
   def handle_event("delete", %{"interface-name" => interface_name}, socket) do
     if can_write?(socket) do
-      case Tunnels.delete_wireguard_interface_cluster(socket.assigns.current_scope, interface_name) do
+      case Tunnels.delete_wireguard_interface_cluster(
+             socket.assigns.current_scope,
+             interface_name
+           ) do
         {:ok, _} ->
           {:noreply,
            socket
@@ -348,8 +351,7 @@ defmodule RouterosCmWeb.WireGuardLive.Index do
                         <div>
                           <h2 class="text-xl font-bold font-mono">{iface.name}</h2>
                           <p class="text-sm text-base-content/60">
-                            Port: {iface.listen_port || "auto"} •
-                            {iface.node_count} node(s)
+                            Port: {iface.listen_port || "auto"} • {iface.node_count} node(s)
                           </p>
                         </div>
                       </div>
@@ -478,7 +480,13 @@ defmodule RouterosCmWeb.WireGuardLive.Index do
           Creates the interface on all active nodes with the same private key.
         </p>
 
-        <.form for={@form} id="interface-form" phx-submit="save" phx-change="validate" class="space-y-4">
+        <.form
+          for={@form}
+          id="interface-form"
+          phx-submit="save"
+          phx-change="validate"
+          class="space-y-4"
+        >
           <.input field={@form[:name]} type="text" label="Interface Name" placeholder="wg0" required />
 
           <.input
@@ -515,7 +523,8 @@ defmodule RouterosCmWeb.WireGuardLive.Index do
       >
         <h2 class="text-xl font-bold mb-4">Assign IP Address</h2>
         <p class="text-sm text-base-content/60 mb-4">
-          Assigns this IP to <span class="font-mono font-bold">{@selected_interface}</span> on all nodes.
+          Assigns this IP to <span class="font-mono font-bold">{@selected_interface}</span>
+          on all nodes.
         </p>
 
         <.form for={@ip_form} id="ip-form" phx-submit="save_ip" class="space-y-4">

@@ -68,6 +68,7 @@ defmodule RouterosCm.Cluster do
           user_id: get_user_id(scope),
           details: %{name: node.name, host: node.host}
         })
+
         result
 
       {:error, _changeset} = error ->
@@ -75,6 +76,7 @@ defmodule RouterosCm.Cluster do
           user_id: get_user_id(scope),
           details: %{attempted_name: attrs[:name] || attrs["name"]}
         })
+
         error
     end
   end
@@ -98,6 +100,7 @@ defmodule RouterosCm.Cluster do
           user_id: get_user_id(scope),
           details: %{name: updated_node.name, changes: Map.keys(attrs)}
         })
+
         result
 
       {:error, _changeset} = error ->
@@ -106,6 +109,7 @@ defmodule RouterosCm.Cluster do
           resource_id: node.id,
           details: %{node_name: node.name}
         })
+
         error
     end
   end
@@ -131,6 +135,7 @@ defmodule RouterosCm.Cluster do
           resource_id: node_id,
           details: %{node_name: node_name}
         })
+
         result
 
       {:error, _changeset} = error ->
@@ -139,6 +144,7 @@ defmodule RouterosCm.Cluster do
           resource_id: node_id,
           details: %{node_name: node_name}
         })
+
         error
     end
   end

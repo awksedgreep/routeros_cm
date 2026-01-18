@@ -354,7 +354,9 @@ defmodule RouterosCm.Tunnels do
         # Build peer config for cluster helper
         peers = [attrs]
 
-        {:ok, results} = MikrotikApi.wireguard_cluster_add_peers(auth, ips, interface_name, peers, api_opts)
+        {:ok, results} =
+          MikrotikApi.wireguard_cluster_add_peers(auth, ips, interface_name, peers, api_opts)
+
         successes = map_results_to_nodes(results, all_nodes)
 
         Audit.log_peer_action("create", interface_name, attrs["public-key"] || "unknown", %{

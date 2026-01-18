@@ -186,7 +186,9 @@ defmodule RouterosCmWeb.DashboardLive do
                             <span title="CPUs">{node_health.cpu_count} CPU(s)</span>
                           <% end %>
                           <%= if node_health.total_memory > 0 do %>
-                            <span title="Total RAM">{format_bytes(node_health.total_memory)} RAM</span>
+                            <span title="Total RAM">
+                              {format_bytes(node_health.total_memory)} RAM
+                            </span>
                           <% end %>
                         </div>
                       <% else %>
@@ -439,6 +441,9 @@ defmodule RouterosCmWeb.DashboardLive do
 
   defp format_bytes(bytes) when bytes < 1024, do: "#{bytes} B"
   defp format_bytes(bytes) when bytes < 1_048_576, do: "#{Float.round(bytes / 1024, 1)} KB"
-  defp format_bytes(bytes) when bytes < 1_073_741_824, do: "#{Float.round(bytes / 1_048_576, 1)} MB"
+
+  defp format_bytes(bytes) when bytes < 1_073_741_824,
+    do: "#{Float.round(bytes / 1_048_576, 1)} MB"
+
   defp format_bytes(bytes), do: "#{Float.round(bytes / 1_073_741_824, 2)} GB"
 end

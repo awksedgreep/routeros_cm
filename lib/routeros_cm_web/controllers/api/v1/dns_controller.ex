@@ -12,24 +12,29 @@ defmodule RouterosCmWeb.API.V1.DNSController do
   alias RouterosCmWeb.ApiSchemas
 
   plug :require_scope, "dns:read" when action in [:index, :show, :settings]
-  plug :require_scope, "dns:write" when action in [:create, :update, :delete, :update_settings, :flush_cache]
 
-  tags ["DNS"]
-  security [%{"bearer" => []}]
+  plug :require_scope,
+       "dns:write" when action in [:create, :update, :delete, :update_settings, :flush_cache]
 
-  operation :index,
+  tags(["DNS"])
+  security([%{"bearer" => []}])
+
+  operation(:index,
     summary: "List DNS records",
     description: "Returns all DNS records across the cluster, grouped by name.",
     parameters: [
       type: [in: :query, type: :string, description: "Filter by record type (A, AAAA, CNAME)"]
     ],
     responses: [
-      ok: {"DNS record list", "application/json", %Schema{
-        type: :object,
-        properties: %{data: %Schema{type: :array, items: ApiSchemas.DNSRecord}}
-      }},
+      ok:
+        {"DNS record list", "application/json",
+         %Schema{
+           type: :object,
+           properties: %{data: %Schema{type: :array, items: ApiSchemas.DNSRecord}}
+         }},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def index(conn, params) do
     case DNS.list_dns_records(current_scope(conn)) do
@@ -47,20 +52,23 @@ defmodule RouterosCmWeb.API.V1.DNSController do
     end
   end
 
-  operation :show,
+  operation(:show,
     summary: "Get a DNS record",
     description: "Returns a specific DNS record by name.",
     parameters: [
       name: [in: :path, type: :string, description: "Domain name", required: true]
     ],
     responses: [
-      ok: {"DNS record", "application/json", %Schema{
-        type: :object,
-        properties: %{data: ApiSchemas.DNSRecord}
-      }},
+      ok:
+        {"DNS record", "application/json",
+         %Schema{
+           type: :object,
+           properties: %{data: ApiSchemas.DNSRecord}
+         }},
       not_found: {"Not found", "application/json", ApiSchemas.Error},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def show(conn, %{"name" => name}) do
     case DNS.list_dns_records(current_scope(conn)) do
@@ -77,14 +85,16 @@ defmodule RouterosCmWeb.API.V1.DNSController do
     end
   end
 
-  operation :create,
+  operation(:create,
     summary: "Create a DNS record",
     description: "Creates a new DNS record across all nodes in the cluster.",
-    request_body: {"DNS record parameters", "application/json", ApiSchemas.DNSRecordCreateRequest},
+    request_body:
+      {"DNS record parameters", "application/json", ApiSchemas.DNSRecordCreateRequest},
     responses: [
       ok: {"Creation result", "application/json", ApiSchemas.ClusterResult},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def create(conn, params) do
     attrs = normalize_dns_params(params)
@@ -98,17 +108,19 @@ defmodule RouterosCmWeb.API.V1.DNSController do
     end
   end
 
-  operation :update,
+  operation(:update,
     summary: "Update a DNS record",
     description: "Updates a DNS record by name across all nodes.",
     parameters: [
       name: [in: :path, type: :string, description: "Domain name", required: true]
     ],
-    request_body: {"DNS record parameters", "application/json", ApiSchemas.DNSRecordCreateRequest},
+    request_body:
+      {"DNS record parameters", "application/json", ApiSchemas.DNSRecordCreateRequest},
     responses: [
       ok: {"Update result", "application/json", ApiSchemas.ClusterResult},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def update(conn, %{"name" => name} = params) do
     attrs =
@@ -126,7 +138,7 @@ defmodule RouterosCmWeb.API.V1.DNSController do
     end
   end
 
-  operation :delete,
+  operation(:delete,
     summary: "Delete a DNS record",
     description: "Deletes a DNS record by name from all nodes.",
     parameters: [
@@ -136,6 +148,7 @@ defmodule RouterosCmWeb.API.V1.DNSController do
       ok: {"Delete result", "application/json", ApiSchemas.ClusterResult},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def delete(conn, %{"name" => name}) do
     case DNS.delete_dns_record_by_name(current_scope(conn), name) do
@@ -147,29 +160,32 @@ defmodule RouterosCmWeb.API.V1.DNSController do
     end
   end
 
-  operation :settings,
+  operation(:settings,
     summary: "Get DNS settings",
     description: "Returns DNS server settings from the first active node.",
     responses: [
-      ok: {"DNS settings", "application/json", %Schema{
-        type: :object,
-        properties: %{
-          data: %Schema{
-            type: :object,
-            properties: %{
-              servers: %Schema{type: :string},
-              dynamic_servers: %Schema{type: :string},
-              allow_remote_requests: %Schema{type: :string},
-              cache_size: %Schema{type: :string},
-              cache_max_ttl: %Schema{type: :string},
-              cache_used: %Schema{type: :string}
-            }
-          }
-        }
-      }},
+      ok:
+        {"DNS settings", "application/json",
+         %Schema{
+           type: :object,
+           properties: %{
+             data: %Schema{
+               type: :object,
+               properties: %{
+                 servers: %Schema{type: :string},
+                 dynamic_servers: %Schema{type: :string},
+                 allow_remote_requests: %Schema{type: :string},
+                 cache_size: %Schema{type: :string},
+                 cache_max_ttl: %Schema{type: :string},
+                 cache_used: %Schema{type: :string}
+               }
+             }
+           }
+         }},
       bad_request: {"Error", "application/json", ApiSchemas.Error},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def settings(conn, _params) do
     case Cluster.list_active_nodes() do
@@ -187,22 +203,25 @@ defmodule RouterosCmWeb.API.V1.DNSController do
     end
   end
 
-  operation :update_settings,
+  operation(:update_settings,
     summary: "Update DNS settings",
     description: "Updates DNS server settings across all nodes.",
-    request_body: {"DNS settings", "application/json", %Schema{
-      type: :object,
-      properties: %{
-        servers: %Schema{type: :string, description: "Comma-separated list of DNS servers"},
-        "allow-remote-requests": %Schema{type: :string, description: "yes/no"},
-        "cache-size": %Schema{type: :string, description: "Cache size in KiB"},
-        "cache-max-ttl": %Schema{type: :string, description: "Maximum TTL for cached entries"}
-      }
-    }},
+    request_body:
+      {"DNS settings", "application/json",
+       %Schema{
+         type: :object,
+         properties: %{
+           servers: %Schema{type: :string, description: "Comma-separated list of DNS servers"},
+           "allow-remote-requests": %Schema{type: :string, description: "yes/no"},
+           "cache-size": %Schema{type: :string, description: "Cache size in KiB"},
+           "cache-max-ttl": %Schema{type: :string, description: "Maximum TTL for cached entries"}
+         }
+       }},
     responses: [
       ok: {"Update result", "application/json", ApiSchemas.ClusterResult},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def update_settings(conn, params) do
     attrs = Map.take(params, ["servers", "allow-remote-requests", "cache-size", "cache-max-ttl"])
@@ -216,13 +235,14 @@ defmodule RouterosCmWeb.API.V1.DNSController do
     end
   end
 
-  operation :flush_cache,
+  operation(:flush_cache,
     summary: "Flush DNS cache",
     description: "Flushes the DNS cache on all nodes in the cluster.",
     responses: [
       ok: {"Flush result", "application/json", ApiSchemas.ClusterResult},
       unauthorized: {"Unauthorized", "application/json", ApiSchemas.Error}
     ]
+  )
 
   def flush_cache(conn, _params) do
     case DNS.flush_dns_cache(current_scope(conn)) do

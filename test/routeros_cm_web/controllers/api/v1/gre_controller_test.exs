@@ -61,7 +61,11 @@ defmodule RouterosCmWeb.API.V1.GREControllerTest do
         build_conn()
         |> put_req_header("accept", "application/json")
         |> put_req_header("authorization", "Bearer #{read_only_token.token}")
-        |> post(~p"/api/v1/gre", %{name: "test-gre", "local-address": "192.168.1.1", "remote-address": "10.0.0.1"})
+        |> post(~p"/api/v1/gre", %{
+          name: "test-gre",
+          "local-address": "192.168.1.1",
+          "remote-address": "10.0.0.1"
+        })
 
       assert %{"error" => %{"code" => "forbidden"}} = json_response(conn, 403)
     end

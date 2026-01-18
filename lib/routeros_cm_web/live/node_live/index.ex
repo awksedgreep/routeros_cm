@@ -279,7 +279,9 @@ defmodule RouterosCmWeb.NodeLive.Index do
             <pre class="bg-base-300 p-3 rounded text-xs overflow-x-auto"><code>{@routeros_setup_code}</code></pre>
 
             <p class="text-base-content/60">
-              <strong>Important:</strong> Replace <code class="bg-base-300 px-1 rounded">secret</code> with a strong password.
+              <strong>Important:</strong>
+              Replace <code class="bg-base-300 px-1 rounded">secret</code>
+              with a strong password.
             </p>
           </div>
         </details>

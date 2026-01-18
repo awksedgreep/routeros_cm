@@ -200,8 +200,7 @@ defmodule RouterosCmWeb.UserLive.Tokens do
                 class="btn join-item"
                 onclick="navigator.clipboard.writeText(document.getElementById('created-token-input').value).then(() => this.classList.add('btn-success'))"
               >
-                <.icon name="hero-clipboard-document" class="size-4" />
-                Copy
+                <.icon name="hero-clipboard-document" class="size-4" /> Copy
               </button>
             </div>
           </div>

@@ -367,7 +367,10 @@ defmodule RouterosCm.RouterOSUsers do
                       Audit.log_routeros_user_action("update", username, %{
                         user_id: current_scope.user.id,
                         node_name: node.name,
-                        details: %{cluster_wide: true, attrs: Map.delete(update_attrs, "password")}
+                        details: %{
+                          cluster_wide: true,
+                          attrs: Map.delete(update_attrs, "password")
+                        }
                       })
 
                       {:ok, node, :updated}

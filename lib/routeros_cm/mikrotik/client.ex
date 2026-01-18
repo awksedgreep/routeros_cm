@@ -60,7 +60,13 @@ defmodule RouterosCm.MikroTik.Client do
   Updates a WireGuard interface.
   """
   def update_wireguard_interface(%Node{} = node, id, attrs) do
-    MikrotikApi.wireguard_interface_update(auth_from_node(node), node.host, id, attrs, get_opts(node))
+    MikrotikApi.wireguard_interface_update(
+      auth_from_node(node),
+      node.host,
+      id,
+      attrs,
+      get_opts(node)
+    )
   end
 
   @doc """
@@ -86,7 +92,13 @@ defmodule RouterosCm.MikroTik.Client do
   """
   def create_wireguard_peer(%Node{} = node, interface_name, attrs) do
     attrs_with_interface = Map.put(attrs, "interface", interface_name)
-    MikrotikApi.wireguard_peer_add(auth_from_node(node), node.host, attrs_with_interface, get_opts(node))
+
+    MikrotikApi.wireguard_peer_add(
+      auth_from_node(node),
+      node.host,
+      attrs_with_interface,
+      get_opts(node)
+    )
   end
 
   @doc """
@@ -105,7 +117,12 @@ defmodule RouterosCm.MikroTik.Client do
         peer = Enum.find(peers, fn p -> p["public-key"] == public_key end)
 
         if peer do
-          MikrotikApi.wireguard_peer_delete(auth_from_node(node), node.host, peer[".id"], get_opts(node))
+          MikrotikApi.wireguard_peer_delete(
+            auth_from_node(node),
+            node.host,
+            peer[".id"],
+            get_opts(node)
+          )
         else
           {:error, :not_found}
         end

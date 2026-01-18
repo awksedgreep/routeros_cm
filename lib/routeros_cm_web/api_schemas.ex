@@ -8,6 +8,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule Error do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "Error",
       description: "API error response",
@@ -35,6 +36,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule ClusterResult do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "ClusterResult",
       description: "Result of a cluster-wide operation",
@@ -84,6 +86,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule Node do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "Node",
       description: "RouterOS node in the cluster",
@@ -112,6 +115,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule NodeCreateRequest do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "NodeCreateRequest",
       description: "Request to create a new node",
@@ -139,6 +143,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule DNSRecord do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "DNSRecord",
       description: "DNS record",
@@ -174,6 +179,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule DNSRecordCreateRequest do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "DNSRecordCreateRequest",
       description: "Request to create a DNS record",
@@ -200,6 +206,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule GREInterface do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "GREInterface",
       description: "GRE tunnel interface",
@@ -228,6 +235,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule WireGuardInterface do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "WireGuardInterface",
       description: "WireGuard interface",
@@ -251,6 +259,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule WireGuardPeer do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "WireGuardPeer",
       description: "WireGuard peer",
@@ -272,6 +281,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule WireGuardKeypair do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "WireGuardKeypair",
       description: "WireGuard keypair",
@@ -291,6 +301,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule RouterOSUser do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "RouterOSUser",
       description: "RouterOS user",
@@ -313,6 +324,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule RouterOSUserCreateRequest do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "RouterOSUserCreateRequest",
       description: "Request to create a RouterOS user",
@@ -336,6 +348,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule AuditLog do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "AuditLog",
       description: "Audit log entry",
@@ -369,6 +382,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule AuditStats do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "AuditStats",
       description: "Audit log statistics",
@@ -388,6 +402,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule ClusterHealth do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "ClusterHealth",
       description: "Cluster health information",
@@ -408,6 +423,7 @@ defmodule RouterosCmWeb.ApiSchemas do
 
   defmodule ClusterStats do
     require OpenApiSpex
+
     OpenApiSpex.schema(%{
       title: "ClusterStats",
       description: "Cluster statistics",
