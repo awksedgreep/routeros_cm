@@ -66,6 +66,17 @@ if [ -z "$DATABASE_HOST" ] || [ -z "$DATABASE_NAME" ] || [ -z "$DATABASE_USER" ]
     exit 1
 fi
 
+# Prompt for app settings
+echo ""
+echo "=== Application Settings ==="
+echo ""
+read -p "PORT (Phoenix server port): " APP_PORT
+
+if [ -z "$APP_PORT" ]; then
+    echo "Error: PORT is required"
+    exit 1
+fi
+
 # Confirm before pushing
 echo ""
 echo "=== Secrets to be pushed ==="
@@ -74,6 +85,7 @@ echo "DATABASE_PORT:    $DATABASE_PORT"
 echo "DATABASE_NAME:    $DATABASE_NAME"
 echo "DATABASE_USER:    $DATABASE_USER"
 echo "DATABASE_PASSWORD: ********"
+echo "PORT:             $APP_PORT"
 echo "SECRET_KEY_BASE:  ${SECRET_KEY_BASE:0:20}..."
 echo "CREDENTIAL_KEY:   ${CREDENTIAL_KEY:0:20}..."
 echo ""
@@ -99,7 +111,7 @@ doppler secrets set \
     SECRET_KEY_BASE="$SECRET_KEY_BASE" \
     CREDENTIAL_KEY="$CREDENTIAL_KEY" \
     PHX_SERVER="true" \
-    PORT="4000" \
+    PORT="$APP_PORT" \
     POOL_SIZE="10"
 
 echo ""
