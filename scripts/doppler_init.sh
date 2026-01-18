@@ -57,6 +57,10 @@ read -p "DATABASE_USER (e.g., routeros_cm): " DATABASE_USER
 read -s -p "DATABASE_PASSWORD: " DATABASE_PASSWORD
 echo ""
 
+# Strip any newlines/whitespace from password
+DATABASE_PASSWORD=$(echo -n "$DATABASE_PASSWORD" | tr -d '\n\r')
+echo "PASSWORD_LENGTH:  ${#DATABASE_PASSWORD} characters"
+
 if [ -z "$DATABASE_HOST" ] || [ -z "$DATABASE_NAME" ] || [ -z "$DATABASE_USER" ]; then
     echo "Error: DATABASE_HOST, DATABASE_NAME, and DATABASE_USER are required"
     exit 1
