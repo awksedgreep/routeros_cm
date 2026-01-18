@@ -1,6 +1,8 @@
 defmodule RouterosCmWeb.API.V1.WireGuardControllerTest do
   use RouterosCmWeb.ConnCase
 
+  @moduletag :integration
+
   import RouterosCm.AccountsFixtures
 
   alias RouterosCm.ApiAuth

@@ -7,6 +7,8 @@ defmodule RouterosCmWeb.API.V1.Integration.FullFlowTest do
   """
   use RouterosCmWeb.ConnCase
 
+  @moduletag :integration
+
   import RouterosCm.AccountsFixtures
   import RouterosCm.ClusterFixtures
 

@@ -25,6 +25,7 @@ defmodule RouterosCm.MikroTik.ClientTest do
   end
 
   describe "function signatures and basic validation" do
+    @describetag :integration
     setup do
       # Use plain password field for testing to avoid encryption/decryption issues
       node = %Node{

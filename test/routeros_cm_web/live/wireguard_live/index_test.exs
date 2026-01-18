@@ -1,6 +1,8 @@
 defmodule RouterosCmWeb.WireGuardLive.IndexTest do
   use RouterosCmWeb.ConnCase
 
+  @moduletag :integration
+
   import Phoenix.LiveViewTest
 
   describe "WireGuard Index page (authenticated)" do

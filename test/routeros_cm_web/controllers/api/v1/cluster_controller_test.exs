@@ -1,6 +1,8 @@
 defmodule RouterosCmWeb.API.V1.ClusterControllerTest do
   use RouterosCmWeb.ConnCase
 
+  @moduletag :integration
+
   import RouterosCm.ClusterFixtures
 
   alias RouterosCm.ApiAuth

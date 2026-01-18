@@ -1,6 +1,8 @@
 defmodule RouterosCmWeb.API.V1.DNSControllerTest do
   use RouterosCmWeb.ConnCase
 
+  @moduletag :integration
+
   alias RouterosCm.ApiAuth
 
   setup %{conn: conn} do

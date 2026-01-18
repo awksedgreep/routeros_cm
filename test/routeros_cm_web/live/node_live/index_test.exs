@@ -1,6 +1,8 @@
 defmodule RouterosCmWeb.NodeLive.IndexTest do
   use RouterosCmWeb.ConnCase
 
+  @moduletag :integration
+
   import Phoenix.LiveViewTest
 
   describe "Node Index page (authenticated)" do

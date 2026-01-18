@@ -1,6 +1,8 @@
 defmodule RouterosCmWeb.DashboardLiveTest do
   use RouterosCmWeb.ConnCase
 
+  @moduletag :integration
+
   import Phoenix.LiveViewTest
 
   describe "Dashboard page (authenticated)" do

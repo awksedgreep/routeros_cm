@@ -1,6 +1,8 @@
 defmodule RouterosCmWeb.DNSLive.IndexTest do
   use RouterosCmWeb.ConnCase
 
+  @moduletag :integration
+
   import Phoenix.LiveViewTest
 
   describe "DNS Index page (authenticated)" do

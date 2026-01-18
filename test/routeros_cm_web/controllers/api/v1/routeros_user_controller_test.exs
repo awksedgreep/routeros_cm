@@ -1,6 +1,8 @@
 defmodule RouterosCmWeb.API.V1.RouterOSUserControllerTest do
   use RouterosCmWeb.ConnCase
 
+  @moduletag :integration
+
   import RouterosCm.AccountsFixtures
 
   alias RouterosCm.ApiAuth
