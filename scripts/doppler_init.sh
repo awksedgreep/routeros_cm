@@ -73,9 +73,9 @@ echo "DATABASE_PASSWORD: ********"
 echo "SECRET_KEY_BASE:  ${SECRET_KEY_BASE:0:20}..."
 echo "CREDENTIAL_KEY:   ${CREDENTIAL_KEY:0:20}..."
 echo ""
-read -p "Push these secrets to Doppler $PROJECT/$CONFIG? (y/N) " CONFIRM
+read -p "Push these secrets to Doppler $PROJECT/$CONFIG? (Y/n) " CONFIRM < /dev/tty
 
-if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+if [[ "$CONFIRM" =~ ^[Nn]$ ]]; then
     echo "Aborted."
     exit 0
 fi
