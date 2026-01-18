@@ -79,15 +79,11 @@ ENV MIX_ENV="prod"
 # Copy release from builder
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/routeros_cm ./
 
-# Create data directory for SQLite database
-RUN mkdir -p /app/data && chown nobody:nogroup /app/data
-
 USER nobody
 
 # Default environment variables
 ENV PHX_SERVER=true
 ENV PORT=6555
-ENV DATABASE_PATH=/app/data/routeros_cm.db
 
 EXPOSE 6555
 
