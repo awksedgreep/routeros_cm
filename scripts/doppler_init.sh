@@ -31,11 +31,10 @@ fi
 # Check if config exists, create if not
 if ! doppler configs get --project "$PROJECT" --config "$CONFIG" &> /dev/null; then
     echo "Creating Doppler config '$CONFIG'..."
-    # Create a dev environment first if it doesn't exist (required as base)
-    if ! doppler environments get --project "$PROJECT" --environment "lab" &> /dev/null 2>&1; then
-        doppler environments create --project "$PROJECT" --slug "lab" --name "Lab"
-    fi
-    doppler configs create --project "$PROJECT" --environment "lab" --name "$CONFIG" 2>/dev/null || true
+    # Create environment first if it doesn't exist (required as base)
+    # Syntax: doppler environments create [name] [slug] --project <project>
+    doppler environments create "Lab" "lab" --project "$PROJECT" 2>/dev/null || true
+    doppler configs create "$CONFIG" --project "$PROJECT" --environment "lab" 2>/dev/null || true
 fi
 
 # Generate SECRET_KEY_BASE (64 bytes, base64 encoded = 88 chars)
