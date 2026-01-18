@@ -46,23 +46,21 @@ echo "Generating CREDENTIAL_KEY..."
 CREDENTIAL_KEY=$(openssl rand -base64 32 | tr -d '\n')
 
 # Prompt for database connection details
+# Using standard PostgreSQL variable names so psql works on the command line
 echo ""
 echo "=== PostgreSQL Connection Details ==="
 echo ""
-read -p "DATABASE_HOST (e.g., db.example.com): " DATABASE_HOST
-read -p "DATABASE_PORT [5432]: " DATABASE_PORT
-DATABASE_PORT=${DATABASE_PORT:-5432}
-read -p "DATABASE_NAME (e.g., routeros_cm_prod): " DATABASE_NAME
-read -p "DATABASE_USER (e.g., routeros_cm): " DATABASE_USER
-read -s -p "DATABASE_PASSWORD: " DATABASE_PASSWORD
+read -p "PGHOST (e.g., db.example.com): " PGHOST
+read -p "PGPORT [5432]: " PGPORT
+PGPORT=${PGPORT:-5432}
+read -p "PGDATABASE (e.g., routeros_cm_prod): " PGDATABASE
+read -p "PGUSER (e.g., routeros_cm): " PGUSER
+read -s -p "PGPASSWORD: " PGPASSWORD
 echo ""
+echo "PASSWORD_LENGTH:  ${#PGPASSWORD} characters"
 
-# Strip any newlines/whitespace from password
-DATABASE_PASSWORD=$(echo -n "$DATABASE_PASSWORD" | tr -d '\n\r')
-echo "PASSWORD_LENGTH:  ${#DATABASE_PASSWORD} characters"
-
-if [ -z "$DATABASE_HOST" ] || [ -z "$DATABASE_NAME" ] || [ -z "$DATABASE_USER" ]; then
-    echo "Error: DATABASE_HOST, DATABASE_NAME, and DATABASE_USER are required"
+if [ -z "$PGHOST" ] || [ -z "$PGDATABASE" ] || [ -z "$PGUSER" ]; then
+    echo "Error: PGHOST, PGDATABASE, and PGUSER are required"
     exit 1
 fi
 
@@ -80,11 +78,11 @@ fi
 # Confirm before pushing
 echo ""
 echo "=== Secrets to be pushed ==="
-echo "DATABASE_HOST:    $DATABASE_HOST"
-echo "DATABASE_PORT:    $DATABASE_PORT"
-echo "DATABASE_NAME:    $DATABASE_NAME"
-echo "DATABASE_USER:    $DATABASE_USER"
-echo "DATABASE_PASSWORD: ********"
+echo "PGHOST:           $PGHOST"
+echo "PGPORT:           $PGPORT"
+echo "PGDATABASE:       $PGDATABASE"
+echo "PGUSER:           $PGUSER"
+echo "PGPASSWORD:       ********"
 echo "PORT:             $APP_PORT"
 echo "SECRET_KEY_BASE:  ${SECRET_KEY_BASE:0:20}..."
 echo "CREDENTIAL_KEY:   ${CREDENTIAL_KEY:0:20}..."
@@ -103,11 +101,11 @@ echo "Pushing secrets to Doppler..."
 doppler secrets set \
     --project "$PROJECT" \
     --config "$CONFIG" \
-    DATABASE_HOST="$DATABASE_HOST" \
-    DATABASE_PORT="$DATABASE_PORT" \
-    DATABASE_NAME="$DATABASE_NAME" \
-    DATABASE_USER="$DATABASE_USER" \
-    DATABASE_PASSWORD="$DATABASE_PASSWORD" \
+    PGHOST="$PGHOST" \
+    PGPORT="$PGPORT" \
+    PGDATABASE="$PGDATABASE" \
+    PGUSER="$PGUSER" \
+    PGPASSWORD="$PGPASSWORD" \
     SECRET_KEY_BASE="$SECRET_KEY_BASE" \
     CREDENTIAL_KEY="$CREDENTIAL_KEY" \
     PHX_SERVER="true" \

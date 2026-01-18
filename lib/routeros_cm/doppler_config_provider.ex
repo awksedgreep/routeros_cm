@@ -99,21 +99,19 @@ defmodule RouterosCm.DopplerConfigProvider do
   end
 
   defp maybe_add_repo_config(config, secrets) do
-    hostname = get_secret(secrets, "DATABASE_HOST")
-    database = get_secret(secrets, "DATABASE_NAME")
-    password = get_secret(secrets, "DATABASE_PASSWORD")
-
-    # Debug: check if password was fetched
-    IO.puts("[DopplerConfigProvider] DATABASE_PASSWORD present: #{password != nil}, length: #{if password, do: String.length(password), else: 0}")
+    # Use standard PostgreSQL environment variable names (PGHOST, PGDATABASE, etc.)
+    # so users can run psql directly on the command line
+    hostname = get_secret(secrets, "PGHOST")
+    database = get_secret(secrets, "PGDATABASE")
 
     if hostname && database do
       repo_config =
         [
           hostname: hostname,
           database: database,
-          username: get_secret(secrets, "DATABASE_USER"),
-          password: password,
-          port: get_integer_secret(secrets, "DATABASE_PORT") || 5432,
+          username: get_secret(secrets, "PGUSER"),
+          password: get_secret(secrets, "PGPASSWORD"),
+          port: get_integer_secret(secrets, "PGPORT") || 5432,
           pool_size: get_integer_secret(secrets, "POOL_SIZE") || 10
         ]
         |> Enum.reject(fn {_k, v} -> is_nil(v) end)
@@ -125,8 +123,6 @@ defmodule RouterosCm.DopplerConfigProvider do
           _ -> repo_config
         end
 
-      IO.puts("[DopplerConfigProvider] Repo config: #{inspect(Keyword.delete(repo_config, :password))}")
-      IO.puts("[DopplerConfigProvider] Password in config: #{Keyword.has_key?(repo_config, :password)}")
       Keyword.put(config, RouterosCm.Repo, repo_config)
     else
       config
