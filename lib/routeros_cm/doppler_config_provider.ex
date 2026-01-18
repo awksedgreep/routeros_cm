@@ -15,6 +15,10 @@ defmodule RouterosCm.DopplerConfigProvider do
 
   @impl Config.Provider
   def load(config, _opts) do
+    # Ensure required applications are started for HTTP requests
+    {:ok, _} = Application.ensure_all_started(:inets)
+    {:ok, _} = Application.ensure_all_started(:ssl)
+
     case System.get_env("DOPPLER_TOKEN") do
       nil ->
         Logger.info(
@@ -32,17 +36,15 @@ defmodule RouterosCm.DopplerConfigProvider do
   defp fetch_and_merge_config(config, token) do
     case fetch_doppler_secrets(token) do
       {:ok, secrets} ->
-        Logger.info(
-          "[DopplerConfigProvider] Successfully loaded #{map_size(secrets)} secrets from Doppler"
-        )
+        IO.puts("[DopplerConfigProvider] Successfully loaded #{map_size(secrets)} secrets from Doppler")
+
+        # Debug: show which keys we got
+        IO.puts("[DopplerConfigProvider] Secret keys: #{inspect(Map.keys(secrets))}")
 
         merge_doppler_config(config, secrets)
 
       {:error, reason} ->
-        Logger.error(
-          "[DopplerConfigProvider] Failed to fetch secrets from Doppler: #{inspect(reason)}"
-        )
-
+        IO.puts("[DopplerConfigProvider] ERROR: Failed to fetch secrets: #{inspect(reason)}")
         config
     end
   end
