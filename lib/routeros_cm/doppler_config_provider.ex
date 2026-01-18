@@ -101,6 +101,10 @@ defmodule RouterosCm.DopplerConfigProvider do
   defp maybe_add_repo_config(config, secrets) do
     hostname = get_secret(secrets, "DATABASE_HOST")
     database = get_secret(secrets, "DATABASE_NAME")
+    password = get_secret(secrets, "DATABASE_PASSWORD")
+
+    # Debug: check if password was fetched
+    IO.puts("[DopplerConfigProvider] DATABASE_PASSWORD present: #{password != nil}, length: #{if password, do: String.length(password), else: 0}")
 
     if hostname && database do
       repo_config =
@@ -108,7 +112,7 @@ defmodule RouterosCm.DopplerConfigProvider do
           hostname: hostname,
           database: database,
           username: get_secret(secrets, "DATABASE_USER"),
-          password: get_secret(secrets, "DATABASE_PASSWORD"),
+          password: password,
           port: get_integer_secret(secrets, "DATABASE_PORT") || 5432,
           pool_size: get_integer_secret(secrets, "POOL_SIZE") || 10
         ]
@@ -122,6 +126,7 @@ defmodule RouterosCm.DopplerConfigProvider do
         end
 
       IO.puts("[DopplerConfigProvider] Repo config: #{inspect(Keyword.delete(repo_config, :password))}")
+      IO.puts("[DopplerConfigProvider] Password in config: #{Keyword.has_key?(repo_config, :password)}")
       Keyword.put(config, RouterosCm.Repo, repo_config)
     else
       config
