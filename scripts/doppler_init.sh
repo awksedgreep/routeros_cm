@@ -22,6 +22,22 @@ if ! command -v doppler &> /dev/null; then
     exit 1
 fi
 
+# Check if project exists, create if not
+if ! doppler projects get "$PROJECT" &> /dev/null; then
+    echo "Creating Doppler project '$PROJECT'..."
+    doppler projects create "$PROJECT" --description "RouterOS Cluster Manager"
+fi
+
+# Check if config exists, create if not
+if ! doppler configs get --project "$PROJECT" --config "$CONFIG" &> /dev/null; then
+    echo "Creating Doppler config '$CONFIG'..."
+    # Create a dev environment first if it doesn't exist (required as base)
+    if ! doppler environments get --project "$PROJECT" --environment "lab" &> /dev/null 2>&1; then
+        doppler environments create --project "$PROJECT" --slug "lab" --name "Lab"
+    fi
+    doppler configs create --project "$PROJECT" --environment "lab" --name "$CONFIG" 2>/dev/null || true
+fi
+
 # Generate SECRET_KEY_BASE (64 bytes, base64 encoded = 88 chars)
 echo "Generating SECRET_KEY_BASE..."
 SECRET_KEY_BASE=$(openssl rand -base64 64 | tr -d '\n')
