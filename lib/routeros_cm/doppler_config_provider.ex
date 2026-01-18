@@ -99,23 +99,51 @@ defmodule RouterosCm.DopplerConfigProvider do
   end
 
   defp maybe_add_repo_config(config, secrets) do
-    base_config =
-      []
-      |> maybe_put(:url, get_secret(secrets, "DATABASE_URL"))
-      |> maybe_put(:pool_size, get_integer_secret(secrets, "POOL_SIZE") || 10)
+    case get_secret(secrets, "DATABASE_URL") do
+      nil ->
+        config
 
-    # Add IPv6 support if enabled
-    repo_config =
-      case get_boolean_secret(secrets, "ECTO_IPV6") do
-        true -> Keyword.put(base_config, :socket_options, [:inet6])
-        _ -> base_config
+      database_url ->
+        repo_config = parse_database_url(database_url)
+        pool_size = get_integer_secret(secrets, "POOL_SIZE") || 10
+        repo_config = Keyword.put(repo_config, :pool_size, pool_size)
+
+        # Add IPv6 support if enabled
+        repo_config =
+          case get_boolean_secret(secrets, "ECTO_IPV6") do
+            true -> Keyword.put(repo_config, :socket_options, [:inet6])
+            _ -> repo_config
+          end
+
+        IO.puts("[DopplerConfigProvider] Repo config: #{inspect(repo_config)}")
+        Keyword.put(config, RouterosCm.Repo, repo_config)
+    end
+  end
+
+  # Parse DATABASE_URL into Ecto repo options
+  # Format: ecto://username:password@hostname:port/database
+  defp parse_database_url(url) do
+    uri = URI.parse(url)
+
+    # Extract username and password from userinfo
+    {username, password} =
+      case uri.userinfo do
+        nil -> {nil, nil}
+        userinfo ->
+          case String.split(userinfo, ":", parts: 2) do
+            [user] -> {user, nil}
+            [user, pass] -> {user, pass}
+          end
       end
 
-    if get_secret(secrets, "DATABASE_URL") != nil do
-      Keyword.put(config, RouterosCm.Repo, repo_config)
-    else
-      config
-    end
+    [
+      database: String.trim_leading(uri.path || "", "/"),
+      username: username,
+      password: password,
+      hostname: uri.host,
+      port: uri.port || 5432
+    ]
+    |> Enum.reject(fn {_k, v} -> is_nil(v) or v == "" end)
   end
 
   defp maybe_add_endpoint_config(config, secrets) do
