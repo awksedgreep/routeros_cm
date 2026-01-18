@@ -8,7 +8,7 @@
 
 set -e
 
-PROJECT="routeros-cm"
+PROJECT="routeros_cm"
 CONFIG="lab"
 
 echo "=== RouterOS CM Doppler Secret Initialization ==="
