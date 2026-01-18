@@ -45,23 +45,31 @@ SECRET_KEY_BASE=$(openssl rand -base64 64 | tr -d '\n')
 echo "Generating CREDENTIAL_KEY..."
 CREDENTIAL_KEY=$(openssl rand -base64 32 | tr -d '\n')
 
-# Prompt for DATABASE_URL
+# Prompt for database connection details
 echo ""
-echo "Enter your PostgreSQL connection URL"
-echo "Format: ecto://username:password@hostname:port/database_name"
-echo "Example: ecto://postgres:secretpass@db.example.com:5432/routeros_cm_prod"
+echo "=== PostgreSQL Connection Details ==="
 echo ""
-read -p "DATABASE_URL: " DATABASE_URL
+read -p "DATABASE_HOST (e.g., db.example.com): " DATABASE_HOST
+read -p "DATABASE_PORT [5432]: " DATABASE_PORT
+DATABASE_PORT=${DATABASE_PORT:-5432}
+read -p "DATABASE_NAME (e.g., routeros_cm_prod): " DATABASE_NAME
+read -p "DATABASE_USER (e.g., routeros_cm): " DATABASE_USER
+read -s -p "DATABASE_PASSWORD: " DATABASE_PASSWORD
+echo ""
 
-if [ -z "$DATABASE_URL" ]; then
-    echo "Error: DATABASE_URL is required"
+if [ -z "$DATABASE_HOST" ] || [ -z "$DATABASE_NAME" ] || [ -z "$DATABASE_USER" ]; then
+    echo "Error: DATABASE_HOST, DATABASE_NAME, and DATABASE_USER are required"
     exit 1
 fi
 
 # Confirm before pushing
 echo ""
 echo "=== Secrets to be pushed ==="
-echo "DATABASE_URL:     ${DATABASE_URL:0:20}..."
+echo "DATABASE_HOST:    $DATABASE_HOST"
+echo "DATABASE_PORT:    $DATABASE_PORT"
+echo "DATABASE_NAME:    $DATABASE_NAME"
+echo "DATABASE_USER:    $DATABASE_USER"
+echo "DATABASE_PASSWORD: ********"
 echo "SECRET_KEY_BASE:  ${SECRET_KEY_BASE:0:20}..."
 echo "CREDENTIAL_KEY:   ${CREDENTIAL_KEY:0:20}..."
 echo ""
@@ -79,7 +87,11 @@ echo "Pushing secrets to Doppler..."
 doppler secrets set \
     --project "$PROJECT" \
     --config "$CONFIG" \
-    DATABASE_URL="$DATABASE_URL" \
+    DATABASE_HOST="$DATABASE_HOST" \
+    DATABASE_PORT="$DATABASE_PORT" \
+    DATABASE_NAME="$DATABASE_NAME" \
+    DATABASE_USER="$DATABASE_USER" \
+    DATABASE_PASSWORD="$DATABASE_PASSWORD" \
     SECRET_KEY_BASE="$SECRET_KEY_BASE" \
     CREDENTIAL_KEY="$CREDENTIAL_KEY" \
     PHX_SERVER="true" \

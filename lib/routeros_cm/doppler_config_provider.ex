@@ -99,51 +99,33 @@ defmodule RouterosCm.DopplerConfigProvider do
   end
 
   defp maybe_add_repo_config(config, secrets) do
-    case get_secret(secrets, "DATABASE_URL") do
-      nil ->
-        config
+    hostname = get_secret(secrets, "DATABASE_HOST")
+    database = get_secret(secrets, "DATABASE_NAME")
 
-      database_url ->
-        repo_config = parse_database_url(database_url)
-        pool_size = get_integer_secret(secrets, "POOL_SIZE") || 10
-        repo_config = Keyword.put(repo_config, :pool_size, pool_size)
+    if hostname && database do
+      repo_config =
+        [
+          hostname: hostname,
+          database: database,
+          username: get_secret(secrets, "DATABASE_USER"),
+          password: get_secret(secrets, "DATABASE_PASSWORD"),
+          port: get_integer_secret(secrets, "DATABASE_PORT") || 5432,
+          pool_size: get_integer_secret(secrets, "POOL_SIZE") || 10
+        ]
+        |> Enum.reject(fn {_k, v} -> is_nil(v) end)
 
-        # Add IPv6 support if enabled
-        repo_config =
-          case get_boolean_secret(secrets, "ECTO_IPV6") do
-            true -> Keyword.put(repo_config, :socket_options, [:inet6])
-            _ -> repo_config
-          end
+      # Add IPv6 support if enabled
+      repo_config =
+        case get_boolean_secret(secrets, "ECTO_IPV6") do
+          true -> Keyword.put(repo_config, :socket_options, [:inet6])
+          _ -> repo_config
+        end
 
-        IO.puts("[DopplerConfigProvider] Repo config: #{inspect(repo_config)}")
-        Keyword.put(config, RouterosCm.Repo, repo_config)
+      IO.puts("[DopplerConfigProvider] Repo config: #{inspect(Keyword.delete(repo_config, :password))}")
+      Keyword.put(config, RouterosCm.Repo, repo_config)
+    else
+      config
     end
-  end
-
-  # Parse DATABASE_URL into Ecto repo options
-  # Format: ecto://username:password@hostname:port/database
-  defp parse_database_url(url) do
-    uri = URI.parse(url)
-
-    # Extract username and password from userinfo
-    {username, password} =
-      case uri.userinfo do
-        nil -> {nil, nil}
-        userinfo ->
-          case String.split(userinfo, ":", parts: 2) do
-            [user] -> {user, nil}
-            [user, pass] -> {user, pass}
-          end
-      end
-
-    [
-      database: String.trim_leading(uri.path || "", "/"),
-      username: username,
-      password: password,
-      hostname: uri.host,
-      port: uri.port || 5432
-    ]
-    |> Enum.reject(fn {_k, v} -> is_nil(v) or v == "" end)
   end
 
   defp maybe_add_endpoint_config(config, secrets) do
