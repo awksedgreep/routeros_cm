@@ -12,8 +12,9 @@ config :routeros_cm, :credential_encryption_key, "QCG0nLvTaKMtB2yVzpzC4X/yvR+RHt
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :routeros_cm, RouterosCm.Repo,
-  username: System.get_env("USER"),
-  hostname: "localhost",
+  username: System.get_env("PGUSER") || System.get_env("USER"),
+  password: System.get_env("PGPASSWORD") || nil,
+  hostname: System.get_env("PGHOST") || "localhost",
   database: "routeros_cm_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
