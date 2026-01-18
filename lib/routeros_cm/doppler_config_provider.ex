@@ -50,15 +50,15 @@ defmodule RouterosCm.DopplerConfigProvider do
   end
 
   defp fetch_doppler_secrets(token) do
-    url = "https://api.doppler.com/v3/configs/config/secrets/download?format=json"
+    url = ~c"https://api.doppler.com/v3/configs/config/secrets/download?format=json"
 
     headers = [
-      {"Authorization", "Bearer #{token}"},
-      {"Accept", "application/json"},
-      {"User-Agent", "RouterosCm/1.0"}
+      {~c"Authorization", String.to_charlist("Bearer #{token}")},
+      {~c"Accept", ~c"application/json"},
+      {~c"User-Agent", ~c"RouterosCm/1.0"}
     ]
 
-    case :httpc.request(:get, {String.to_charlist(url), headers}, [], []) do
+    case :httpc.request(:get, {url, headers}, [], []) do
       {:ok, {{_, 200, _}, _headers, body}} ->
         case Jason.decode(List.to_string(body)) do
           {:ok, secrets} -> {:ok, secrets}
