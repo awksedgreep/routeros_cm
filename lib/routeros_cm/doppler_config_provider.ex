@@ -97,12 +97,19 @@ defmodule RouterosCm.DopplerConfigProvider do
   end
 
   defp maybe_add_repo_config(config, secrets) do
-    repo_config =
+    base_config =
       []
-      |> maybe_put(:database, get_secret(secrets, "DATABASE_PATH"))
-      |> maybe_put(:pool_size, get_integer_secret(secrets, "POOL_SIZE"))
+      |> maybe_put(:url, get_secret(secrets, "DATABASE_URL"))
+      |> maybe_put(:pool_size, get_integer_secret(secrets, "POOL_SIZE") || 10)
 
-    if repo_config != [] do
+    # Add IPv6 support if enabled
+    repo_config =
+      case get_boolean_secret(secrets, "ECTO_IPV6") do
+        true -> Keyword.put(base_config, :socket_options, [:inet6])
+        _ -> base_config
+      end
+
+    if get_secret(secrets, "DATABASE_URL") != nil do
       Keyword.put(config, RouterosCm.Repo, repo_config)
     else
       config
