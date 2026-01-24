@@ -38,11 +38,17 @@ else
     config :routeros_cm, RouterosCmWeb.Endpoint, http: [port: String.to_integer(port)]
   end
 
+  # Mail "from" address configuration
+  mail_from_address = System.get_env("MAIL_FROM_ADDRESS", "contact@example.com")
+  mail_from_name = System.get_env("MAIL_FROM_NAME", "RouterosCM")
+  config :routeros_cm, :mail_from, {mail_from_name, mail_from_address}
+
   # Mail configuration for containers
   # MAIL_PROVIDER options:
   #   - "local"  : Enable /dev/mailbox preview (for development)
   #   - "logger" : Log emails to console/stdout
   #   - "smtp"   : Use SMTP relay (requires SMTP_* env vars)
+  #   - "resend" : Use Resend API (requires RESEND_API_KEY)
   #   - unset    : Use default Swoosh.Adapters.Local
   case System.get_env("MAIL_PROVIDER") do
     "local" ->
@@ -68,23 +74,30 @@ else
         tls: :if_available,
         auth: :if_available
 
+    "resend" ->
+      # Resend API configuration
+      config :routeros_cm, RouterosCm.Mailer,
+        adapter: Swoosh.Adapters.Resend,
+        api_key: System.get_env("RESEND_API_KEY") || raise("RESEND_API_KEY is required when MAIL_PROVIDER=resend")
+
     _ ->
       # Default: keep compile-time configuration
       :ok
   end
 
   if config_env() == :prod do
-    database_url =
-      System.get_env("DATABASE_URL") ||
-        raise """
-        environment variable DATABASE_URL is missing.
-        For example: ecto://USER:PASS@HOST/DATABASE
-        """
+    # Use standard PostgreSQL env vars so psql works on the command line
+    pghost = System.get_env("PGHOST") || raise "environment variable PGHOST is missing"
+    pgdatabase = System.get_env("PGDATABASE") || raise "environment variable PGDATABASE is missing"
 
     maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
     config :routeros_cm, RouterosCm.Repo,
-      url: database_url,
+      hostname: pghost,
+      database: pgdatabase,
+      username: System.get_env("PGUSER"),
+      password: System.get_env("PGPASSWORD"),
+      port: String.to_integer(System.get_env("PGPORT") || "5432"),
       pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
       socket_options: maybe_ipv6
 

@@ -34,7 +34,7 @@ A comprehensive web application for centrally managing MikroTik RouterOS cluster
 ## Technology Stack
 
 - **Framework:** Phoenix 1.8 with LiveView 1.0
-- **Database:** SQLite 3 with Ecto
+- **Database:** PostgreSQL with Ecto
 - **RouterOS API:** Official MikrotikApi library
 - **Encryption:** Cloak (AES-256-GCM) for credential storage
 - **UI Framework:** DaisyUI + Tailwind CSS v4
@@ -87,7 +87,7 @@ mix ecto.setup
 ```
 
 This will:
-- Create the SQLite database
+- Create the PostgreSQL database
 - Run all migrations
 - Seed initial data (if any)
 
@@ -196,11 +196,15 @@ Key environment variables:
 # Secret key base (generate with: mix phx.gen.secret)
 SECRET_KEY_BASE=your_secret_key_base
 
-# Database path
-DATABASE_PATH=priv/repo/routeros_cm.db
+# PostgreSQL connection (standard libpq variables)
+PGHOST=localhost
+PGPORT=5432
+PGDATABASE=routeros_cm
+PGUSER=routeros_cm
+PGPASSWORD=your_password
 
-# Encryption key (generate with: mix cloak.generate_key)
-CLOAK_KEY=your_encryption_key
+# Encryption key for credentials
+CREDENTIAL_KEY=your_encryption_key
 ```
 
 ## Usage Examples
@@ -267,7 +271,7 @@ mix ecto.reset
 The application follows an **API-first** architecture:
 - RouterOS resources (tunnels, DNS, users) are **NOT stored locally**
 - All operations go directly to RouterOS API
-- SQLite is only used for:
+- PostgreSQL is only used for:
   - User accounts (authentication)
   - Node credentials (encrypted)
   - Audit logs
@@ -314,10 +318,13 @@ All cluster-wide operations use `Task.async_stream` with:
     api_timeout: 30_000  # 30 seconds
   ```
 
-### Database Locked
+### Database Connection Issues
 
-SQLite may lock with concurrent access:
+Check PostgreSQL connection:
 ```bash
+# Test connection with psql (uses PG* env vars)
+psql -c "SELECT 1"
+
 # Reset database
 mix ecto.reset
 ```

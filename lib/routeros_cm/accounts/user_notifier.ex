@@ -9,7 +9,7 @@ defmodule RouterosCm.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"RouterosCm", "contact@example.com"})
+      |> from(Application.get_env(:routeros_cm, :mail_from, {"RouterosCM", "contact@example.com"}))
       |> subject(subject)
       |> text_body(body)
 

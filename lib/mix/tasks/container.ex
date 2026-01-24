@@ -264,7 +264,6 @@ defmodule Mix.Tasks.Container.Run do
         detach_args ++
         ["--name", name] ++
         network_args ++
-        ["-v", "routeros_cm_data:/app/data"] ++
         env_file_args ++
         [
           "-e",
@@ -273,8 +272,6 @@ defmodule Mix.Tasks.Container.Run do
           "PORT=6555",
           "-e",
           "PHX_HOST=localhost",
-          "-e",
-          "DATABASE_PATH=/app/data/routeros_cm.db",
           full_tag
         ]
 

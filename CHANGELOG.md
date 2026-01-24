@@ -15,7 +15,7 @@ Complete rewrite and migration from `tunnel_manager` to `routeros_cm` with moder
 
 #### Infrastructure
 - Phoenix 1.8 with LiveView 1.0 for real-time UI updates
-- SQLite database with Ecto 3.13.5 for user management
+- PostgreSQL database with Ecto 3.13.5 for user management
 - AES-256-GCM encryption for node credentials (Cloak)
 - Audit logging for all cluster operations
 - User authentication system with email/password
@@ -103,7 +103,7 @@ Complete rewrite and migration from `tunnel_manager` to `routeros_cm` with moder
 #### Dependencies
 - Phoenix 1.8.5 / Phoenix LiveView 1.0.1
 - Ecto 3.13.5 / Ecto SQL 3.13.3
-- Ecto SQLite3 0.19.0
+- Postgrex (PostgreSQL driver)
 - MikrotikApi 0.3.1 (official RouterOS API client)
 - Req 0.5.9 (modern HTTP client)
 - Cloak 1.1.4 (AES-256-GCM encryption)
@@ -143,7 +143,7 @@ Complete rewrite and migration from `tunnel_manager` to `routeros_cm` with moder
 - 15-second timeouts for all RouterOS API calls
 - Connection pooling for database operations
 - Optimized LiveView updates (30s auto-refresh)
-- Efficient SQLite database for minimal overhead
+- Efficient PostgreSQL database for minimal overhead
 
 ### Migration Notes
 
@@ -188,8 +188,6 @@ See [README.md](README.md#roadmap) for planned features and enhancements.
 ---
 
 ## Contributing
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for deployment instructions.
 
 See [README.md](README.md#development) for development setup.
 

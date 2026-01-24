@@ -10,10 +10,10 @@ services:
       - PHX_SERVER=true
       - PORT=4000
       - PHX_HOST=localhost
-      - DATABASE_PATH=/app/data/routeros_cm.db
-    volumes:
-      - routeros_cm_data:/app/data
+      # PostgreSQL connection - set in .env.docker or override here
+      # - PGHOST=your-postgres-host
+      # - PGPORT=5432
+      # - PGDATABASE=routeros_cm
+      # - PGUSER=routeros_cm
+      # - PGPASSWORD=your-password
     restart: unless-stopped
-
-volumes:
-  routeros_cm_data:
