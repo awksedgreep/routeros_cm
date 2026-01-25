@@ -29,10 +29,9 @@ RUN mkdir config
 
 # Copy compile-time config files
 COPY config/config.exs config/${MIX_ENV}.exs config/
-RUN mix deps.compile
-
-# Force recompile Swoosh after resend is available so Resend adapter is included
-RUN mix deps.compile swoosh --force
+# Compile all deps, ensuring resend is compiled, then force recompile Swoosh
+# so it sees the resend dep and includes the Resend adapter
+RUN mix deps.compile && mix deps.compile swoosh --force
 
 # Copy application code first (needed for colocated hooks)
 COPY lib lib
