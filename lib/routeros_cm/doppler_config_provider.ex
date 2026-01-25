@@ -177,6 +177,31 @@ defmodule RouterosCm.DopplerConfigProvider do
   end
 
   defp maybe_add_mailer_config(config, secrets) do
+    case get_secret(secrets, "MAIL_PROVIDER") do
+      "resend" ->
+        api_key = get_secret(secrets, "RESEND_API_KEY")
+
+        if api_key do
+          mailer_config = [adapter: Swoosh.Adapters.Resend, api_key: api_key]
+          Keyword.put(config, RouterosCm.Mailer, mailer_config)
+        else
+          config
+        end
+
+      "smtp" ->
+        add_smtp_mailer_config(config, secrets)
+
+      _ ->
+        # Fall back to SMTP if SMTP_HOST is configured
+        if has_smtp_config?(secrets) do
+          add_smtp_mailer_config(config, secrets)
+        else
+          config
+        end
+    end
+  end
+
+  defp add_smtp_mailer_config(config, secrets) do
     mailer_config =
       []
       |> maybe_put(:adapter, Swoosh.Adapters.SMTP)
@@ -188,11 +213,7 @@ defmodule RouterosCm.DopplerConfigProvider do
       |> maybe_put(:tls, :if_available)
       |> maybe_put(:auth, :if_available)
 
-    if has_smtp_config?(secrets) do
-      Keyword.put(config, RouterosCm.Mailer, mailer_config)
-    else
-      config
-    end
+    Keyword.put(config, RouterosCm.Mailer, mailer_config)
   end
 
   defp maybe_add_feature_config(config, secrets) do
