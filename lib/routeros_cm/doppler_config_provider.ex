@@ -182,7 +182,8 @@ defmodule RouterosCm.DopplerConfigProvider do
         api_key = get_secret(secrets, "RESEND_API_KEY")
 
         if api_key do
-          mailer_config = [adapter: Swoosh.Adapters.Resend, api_key: api_key]
+          # The resend package provides Resend.Swoosh.Adapter, not Swoosh.Adapters.Resend
+          mailer_config = [adapter: Resend.Swoosh.Adapter, api_key: api_key]
           Keyword.put(config, RouterosCm.Mailer, mailer_config)
         else
           config

@@ -4,7 +4,7 @@ defmodule RouterosCm.MixProject do
   def project do
     [
       app: :routeros_cm,
-      version: "0.8.15",
+      version: "0.8.16",
       elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
