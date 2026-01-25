@@ -179,22 +179,10 @@ defmodule RouterosCm.DopplerConfigProvider do
   defp maybe_add_mailer_config(config, secrets) do
     case get_secret(secrets, "MAIL_PROVIDER") do
       "resend" ->
-        # Use Resend's SMTP relay - more reliable than API adapter
-        # which requires optional dep compilation order
         api_key = get_secret(secrets, "RESEND_API_KEY")
 
         if api_key do
-          mailer_config = [
-            adapter: Swoosh.Adapters.SMTP,
-            relay: "smtp.resend.com",
-            port: 465,
-            username: "resend",
-            password: api_key,
-            ssl: true,
-            tls: :never,
-            auth: :always
-          ]
-
+          mailer_config = [adapter: Swoosh.Adapters.Resend, api_key: api_key]
           Keyword.put(config, RouterosCm.Mailer, mailer_config)
         else
           config
