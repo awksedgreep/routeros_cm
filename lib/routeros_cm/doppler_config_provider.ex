@@ -92,6 +92,7 @@ defmodule RouterosCm.DopplerConfigProvider do
     |> maybe_add_credential_config(secrets)
     |> maybe_add_container_config(secrets)
     |> maybe_add_mailer_config(secrets)
+    |> maybe_add_mail_from_config(secrets)
     |> maybe_add_feature_config(secrets)
     |> maybe_add_rate_limit_config(secrets)
     |> maybe_add_monitoring_config(secrets)
@@ -215,6 +216,17 @@ defmodule RouterosCm.DopplerConfigProvider do
       |> maybe_put(:auth, :if_available)
 
     Keyword.put(config, RouterosCm.Mailer, mailer_config)
+  end
+
+  defp maybe_add_mail_from_config(config, secrets) do
+    from_address = get_secret(secrets, "MAIL_FROM_ADDRESS")
+    from_name = get_secret(secrets, "MAIL_FROM_NAME") || "RouterosCM"
+
+    if from_address do
+      Keyword.put(config, :mail_from, {from_name, from_address})
+    else
+      config
+    end
   end
 
   defp maybe_add_feature_config(config, secrets) do
