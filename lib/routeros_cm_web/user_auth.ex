@@ -272,12 +272,16 @@ defmodule RouterosCmWeb.UserAuth do
       conn
     else
       conn
-      |> put_flash(:error, "You must log in to access this page.")
+      |> maybe_put_login_flash()
       |> maybe_store_return_to()
       |> redirect(to: ~p"/users/log-in")
       |> halt()
     end
   end
+
+  # Don't show "must log in" flash when visiting root path - it's the default landing
+  defp maybe_put_login_flash(%{request_path: "/"} = conn), do: conn
+  defp maybe_put_login_flash(conn), do: put_flash(conn, :error, "You must log in to access this page.")
 
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     put_session(conn, :user_return_to, current_path(conn))

@@ -126,6 +126,7 @@ defmodule RouterosCmWeb.UserLive.Login do
   end
 
   defp local_mail_adapter? do
-    Application.get_env(:routeros_cm, RouterosCm.Mailer)[:adapter] == Swoosh.Adapters.Local
+    Application.get_env(:routeros_cm, :dev_routes) &&
+      Application.get_env(:routeros_cm, RouterosCm.Mailer)[:adapter] == Swoosh.Adapters.Local
   end
 end
