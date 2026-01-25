@@ -6,11 +6,10 @@ import Config
 # which you should run after static files are built and
 # before starting your production server.
 config :routeros_cm, RouterosCmWeb.Endpoint,
-  cache_static_manifest: "priv/static/cache_manifest.json"
-
-# Force using SSL in production. This also sets the "strict-security-transport" header,
-# also known as HSTS. `:force_ssl` is required to be set at compile-time.
-config :routeros_cm, RouterosCmWeb.Endpoint, force_ssl: [rewrite_on: [:x_forwarded_proto]]
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  # Disable origin checking - network access is controlled by VPN
+  check_origin: false
+  # Note: force_ssl removed - Caddy handles TLS termination
 
 # Enable dev routes (dashboard, mailbox) - controlled at runtime via MAIL_PROVIDER
 # The mailbox will only work when MAIL_PROVIDER=local is set
