@@ -87,6 +87,13 @@ defmodule RouterosCmWeb.UserLive.Login do
             Log in only this time
           </.button>
         </.form>
+
+        <div :if={!(@current_scope && @current_scope.user)} class="pt-4 border-t border-base-300">
+          <p class="text-center text-sm text-base-content/70 mb-3">New to RouterOS CM?</p>
+          <.link navigate={~p"/users/register"} class="btn btn-secondary btn-outline w-full">
+            Create an account
+          </.link>
+        </div>
       </div>
     </Layouts.app>
     """
